@@ -1,14 +1,16 @@
-# Digital Kids Foundation - Coolify Deployment
-
-This package serves the website with Nginx in Docker.
+# Digital Kids Foundation — Coolify + Resend
 
 ## Coolify
-1. Push these files to a Git repository.
-2. In Coolify, create a new Application from that repository.
-3. Choose Dockerfile as the build pack/build method.
-4. Dockerfile location: /Dockerfile
-5. Container port: 80
-6. Deploy.
-7. Add your production domain in Coolify after the first successful deployment.
+Build strategy: Dockerfile
+Exposed port: 3000
 
-The current HTML is self-contained. Any form/email behavior implemented only in browser-side HTML/JavaScript should be tested separately before production use.
+Environment variables (set in Coolify; do not commit secrets):
+```
+RESEND_API_KEY=re_xxxxxxxxx
+MAIL_FROM=website@digitalkidsfoundation.org
+MAIL_TO=help@digitalkidsfoundation.org
+```
+
+The sending domain must be verified in Resend.
+
+Endpoints: `POST /api/submit`, `GET /health`.
