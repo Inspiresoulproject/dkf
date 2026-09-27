@@ -3,8 +3,33 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Digital Kids Foundation — Empowering Kids Through Technology</title>
+<title>Digital Kids Foundation</title>
+<meta name="application-name" content="Digital Kids Foundation"/>
+<meta property="og:site_name" content="Digital Kids Foundation"/>
+<meta property="og:title" content="Digital Kids Foundation"/>
+<meta name="twitter:title" content="Digital Kids Foundation"/>
 <meta name="description" content="Digital Kids Foundation provides refurbished laptops and digital tools to underprivileged children, bridging the digital divide one device at a time."/>
+<link rel="canonical" href="https://digitalkidsfoundation.org/"/>
+<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1"/>
+<meta name="author" content="Digital Kids Foundation"/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://digitalkidsfoundation.org/"/>
+<meta property="og:description" content="Digital Kids Foundation helps bridge the digital divide by refurbishing donated technology and expanding digital access and literacy for underserved children."/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:description" content="Helping underserved children access technology, refurbished devices, and digital literacy opportunities."/>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "NGO",
+  "name": "Digital Kids Foundation",
+  "url": "https://digitalkidsfoundation.org/",
+  "email": "help@digitalkidsfoundation.org",
+  "description": "Digital Kids Foundation helps bridge the digital divide by refurbishing donated technology and expanding digital access and literacy for underserved children.",
+  "areaServed": {"@type":"City","name":"New York City"},
+  "knowsAbout": ["Digital literacy", "Technology access", "Computer donation", "Laptop refurbishment", "Digital inclusion"]
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
@@ -872,7 +897,7 @@ footer{background:var(--teal-deep);color:#fff;padding:68px 5vw 28px}
         <p class="eyebrow">Volunteer Application</p>
         <h2 class="form-title">Apply to Volunteer</h2>
         <p class="form-sub">Fill out the form below and our team will reach out within 3 business days to discuss next steps.</p>
-        <form id="vol-form" method="POST" action="/api/submit">
+        <form id="vol-form" method="POST" action="https://formspree.io/f/mzdqllbn">
             <!-- Formspree config -->
             <input type="hidden" name="_subject" value="New Volunteer Application — Digital Kids Foundation"/>
             <input type="hidden" name="_replyto" value="mborketey@icloud.com"/>
@@ -952,7 +977,7 @@ footer{background:var(--teal-deep);color:#fff;padding:68px 5vw 28px}
           <p class="eyebrow">Donation Form</p>
           <h2 class="form-title">Choose How You'd Like to Give</h2>
           <p class="form-sub">Select a donation type below — money to fund our programs, or a device to be refurbished and given to a child.</p>
-          <form id="don-form" method="POST" action="/api/submit">
+          <form id="don-form" method="POST" action="https://formspree.io/f/mzdqllbn">
             <!-- Formspree config -->
             <input type="hidden" name="_subject" value="New Donation Submission — Digital Kids Foundation"/>
             <input type="hidden" name="_replyto" value="mborketey@icloud.com"/>
@@ -1165,7 +1190,7 @@ footer{background:var(--teal-deep);color:#fff;padding:68px 5vw 28px}
           <h2 class="form-title">We're here to help</h2>
           <p class="form-sub">Fill out the form below and someone from our team will get back to you at help@digitalkidsfoundation.org within 2 business days.</p>
 
-          <form id="con-form" method="POST" action="/api/submit">
+          <form id="con-form" method="POST" action="https://formspree.io/f/mzdqllbn">
             <input type="hidden" name="_subject" value="New Contact Message — Digital Kids Foundation"/>
             <input type="hidden" name="_replyto" value="mborketey@icloud.com"/>
             <input type="hidden" name="_captcha" value="false"/>
@@ -1520,23 +1545,24 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
   const origText  = submitBtn ? submitBtn.textContent : '';
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending…'; }
 
-  /* Serialize form fields and submit to the DKF backend. */
-  var payload = { formType: formId === 'vol-form' ? 'volunteer' : (formId === 'don-form' ? 'donation' : 'contact') };
+  /* Serialize form fields to JSON for Formspree */
+  var payload = {};
   new FormData(form).forEach(function(val, key) { payload[key] = val; });
 
-  fetch('/api/submit', {
+  fetch('https://formspree.io/f/mzdqllbn', {
     method:  'POST',
     body:    JSON.stringify(payload),
     headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
   })
   .then(function(res) {
     return res.json().then(function(body) {
-      if (res.ok && body.ok) {
+      if (res.ok && (body.ok || body.next)) {
         form.style.display = 'none';
         document.getElementById(successId).style.display = 'block';
       } else {
-        var msg = body.error || ('Error ' + res.status);
-        console.error('DKF form API rejected:', res.status, body);
+        var msg = (body.errors && body.errors.map(function(e){return e.message;}).join(', '))
+                  || body.error || ('Error ' + res.status);
+        console.error('Formspree rejected:', res.status, body);
         throw new Error(msg);
       }
     });
@@ -1544,7 +1570,7 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
   .catch(function(err) {
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = origText; }
     console.error('Form error:', err.message);
-    show('⚠️ Could not send. Please email help@digitalkidsfoundation.org directly.');
+    show('⚠️ Could not send. Please email mborketey@icloud.com directly.');
   });
 }
 

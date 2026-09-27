@@ -14,3 +14,12 @@ MAIL_TO=help@digitalkidsfoundation.org
 The sending domain must be verified in Resend.
 
 Endpoints: `POST /api/submit`, `GET /health`.
+
+## SEO additions
+- Canonical URL and index/follow directives
+- Open Graph and Twitter metadata
+- NGO structured data (JSON-LD)
+- `/robots.txt`
+- `/sitemap.xml`
+
+After deployment, submit `https://digitalkidsfoundation.org/sitemap.xml` in Google Search Console and request indexing for the homepage.
