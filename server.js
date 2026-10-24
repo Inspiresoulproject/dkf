@@ -53,6 +53,7 @@ app.post('/api/submit', rateLimit, async (req, res) => {
   }
 });
 
+app.get('/donation-success', (req,res) => res.sendFile(path.join(__dirname, 'public', 'donation-success', 'index.html')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('*', (req,res) => res.sendFile(path.join(__dirname,'public','index.html')));
 app.listen(PORT, '0.0.0.0', () => console.log(`DKF listening on ${PORT}`));
