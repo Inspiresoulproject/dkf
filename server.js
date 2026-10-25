@@ -5,11 +5,28 @@ const store = require('./verification-store');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.set('trust proxy', 1);
+// Set TRUST_PROXY_HOPS only after confirming Coolify's actual proxy chain.
+app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS || 1));
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.set({
+    'X-Content-Type-Options':'nosniff',
+    'Referrer-Policy':'strict-origin-when-cross-origin',
+    'X-Frame-Options':'DENY',
+    'Permissions-Policy':'camera=(), microphone=(), geolocation=()',
+    'Cross-Origin-Opener-Policy':'same-origin-allow-popups',
+    'Content-Security-Policy':"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://www.paypal.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.paypalobjects.com https://www.paypal.com; frame-src https://challenges.cloudflare.com https://www.paypal.com https://www.sandbox.paypal.com; connect-src 'self' https://challenges.cloudflare.com https://www.paypal.com https://www.paypalobjects.com"
+  });
+  if (req.secure || req.headers['x-forwarded-proto'] === 'https') res.set('Strict-Transport-Security','max-age=31536000');
+  next();
+});
 app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: false, limit: '100kb' }));
 
 const hits = new Map();
+// Single-instance limiter. Use Cloudflare WAF or shared storage for multi-instance deployments.
+const rateWindowMs = 10 * 60 * 1000;
+setInterval(() => { const cutoff=Date.now()-rateWindowMs; for (const [ip,times] of hits) { const live=times.filter(t=>t>cutoff); if (live.length) hits.set(ip,live); else hits.delete(ip); } },rateWindowMs).unref();
 function rateLimit(req, res, next) {
   const now = Date.now();
   const key = req.ip || 'unknown';
@@ -121,11 +138,13 @@ app.get('/verify-email', async (req,res) => {
   if (!token) return res.status(400).send(verificationPage('Invalid verification link','Please check the link in your email.'));
   try {
     const pending = await store.claim(token);
-    if (!pending) return res.status(410).send(verificationPage('Link expired or already used','Please submit a new application if you still need to verify.'));
+    if (!pending) return res.status(410).send(verificationPage('Link unavailable','This link may have expired, already been used, or require support. Please contact our team if you already submitted an application.'));
+    // Record dispatch intent before sending to avoid automatic duplicate forwarding after a crash.
+    await store.markDispatching(token);
     const {type,data} = pending;
     const result = await sendMail(buildNotification(type,data,process.env.MAIL_FROM || 'website@digitalkidsfoundation.org',process.env.MAIL_TO || 'help@digitalkidsfoundation.org',data.email));
     await store.finish(token,result.ok);
-    if (!result.ok) return res.status(502).send(verificationPage('Temporary email issue','Your application has not been forwarded. Please retry the same verification link shortly.'));
+    if (!result.ok) return res.status(502).send(verificationPage('Temporary email issue','We could not confirm delivery. Please contact our team if you do not hear back; do not submit repeatedly.'));
     if (type === 'volunteer') {
       try {
         const thankYou = await sendMail(volunteerThankYou(data, process.env.MAIL_FROM || 'website@digitalkidsfoundation.org'));
@@ -147,6 +166,7 @@ app.post('/api/submit', rateLimit, async (req, res) => {
     if (!apiKey) return res.status(500).json({ok:false,error:'Email service is not configured.'});
 
     const data = req.body || {};
+    if (!data || typeof data !== 'object' || Array.isArray(data) || Object.keys(data).length > 40 || Object.entries(data).some(([k,v]) => k.length > 80 || (typeof v !== 'string' && typeof v !== 'number' && typeof v !== 'boolean') || String(v).length > 4000)) return res.status(400).json({ok:false,error:'Invalid or oversized submission.'});
     if (data.website) return res.json({ok:true}); // honeypot
     let turnstileOK = false;
     try { turnstileOK = await verifyTurnstile(data.turnstileToken, req.ip); }

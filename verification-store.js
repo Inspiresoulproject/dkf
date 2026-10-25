@@ -34,9 +34,14 @@ async function write(data) {
   await fs.writeFile(tmp, JSON.stringify(data), {mode:0o600});
   await fs.rename(tmp, file);
 }
+const PROCESSING_TIMEOUT = 2 * 60 * 1000;
 function prune(records) {
   const now = Date.now();
-  for (const [id, rec] of Object.entries(records)) if (rec.expires <= now || rec.state === 'completed' && rec.expires <= now) delete records[id];
+  for (const [id, rec] of Object.entries(records)) {
+    if (rec.state === 'processing' && now - (rec.processingSince || 0) > PROCESSING_TIMEOUT) rec.state = 'pending'; // safe: no external request started
+    if (rec.state === 'dispatching' && now - (rec.processingSince || 0) > PROCESSING_TIMEOUT) { rec.state = 'needs_review'; console.error('Verification dispatch interrupted; manual review required:', id); }
+    if (rec.expires <= now && rec.state !== 'needs_review' && rec.state !== 'dispatching') delete records[id];
+  }
 }
 async function save(token, payload) {
   return lock(async () => {
@@ -57,16 +62,23 @@ async function claim(token) {
     return payload;
   });
 }
+async function markDispatching(token) {
+  return lock(async () => {
+    const records=await read(); const rec=records[hash(token)];
+    if (!rec || rec.state !== 'processing') throw new Error('Verification not claimed');
+    rec.state='dispatching'; rec.processingSince=Date.now(); await write(records);
+  });
+}
 async function finish(token, succeeded) {
   return lock(async () => {
     const records = await read();
     const record = records[hash(token)];
-    if (record && record.state === 'processing') {
+    if (record && record.state === 'dispatching') {
       if (succeeded) { record.state = 'completed'; record.payload = null; record.expires = Date.now() + TTL; }
-      else record.state = 'pending';
+      else { record.state = 'needs_review'; console.error('Verification delivery outcome uncertain; review before retry:', hash(token)); }
       await write(records);
     }
   });
 }
 async function discard(token) { return lock(async () => { const records = await read(); delete records[hash(token)]; await write(records); }); }
-module.exports = {save, claim, finish, discard};
+module.exports = {save, claim, markDispatching, finish, discard};
