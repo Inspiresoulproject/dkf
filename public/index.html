@@ -716,6 +716,18 @@ img,video,iframe{max-width:100%}
 }
 @media(max-width:380px){.hero-editorial h1{font-size:2.15rem!important}.nav-logo img{max-width:180px}#pg-faq .faq-tab{font-size:.78rem}}
 </style>
+<style>
+.dkf-home-donors{background:#f7f8f8;padding:clamp(3rem,6vw,6rem) 0;color:#23292c}
+.dkf-home-donors h2{color:#23292c;font-size:clamp(2.5rem,5vw,4.6rem);line-height:1.1;margin:0 0 1.25rem}
+.dkf-home-donors-intro{font-size:clamp(1rem,1.5vw,1.3rem);line-height:1.65;margin:0 0 2.5rem;max-width:900px;color:#39454a}
+.dkf-home-donors-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.5rem}
+.dkf-home-donor-card{background:#fff;border-radius:24px;box-shadow:0 15px 45px rgba(20,35,35,.08);padding:2rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem;min-height:270px}
+.dkf-home-donor-card img{display:block;width:100%;max-width:410px;height:105px;object-fit:contain}
+.dkf-home-donor-card h3{font-size:1.2rem;line-height:1.35;color:#223a3a;margin:.3rem 0 0}
+.dkf-home-donor-card p{font-size:.95rem;line-height:1.6;color:#526261;margin:0}
+@media(max-width:900px){.dkf-home-donors-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.dkf-home-donors-grid{grid-template-columns:1fr}.dkf-home-donor-card{min-height:0;padding:1.5rem}.dkf-home-donor-card img{height:90px}}
+</style>
 </head>
 <body>
 <!-- ══ NAV ══════════════════════════════════════════ -->
@@ -871,6 +883,20 @@ img,video,iframe{max-width:100%}
 <div class="tcard rev"><blockquote>"We donated 10 refurbished Dell laptops to students in Ghana who had been studying computers without ever having one to practice on. It was life-changing — they finally understood what they were learning because they could practice hands-on with the laptops received from DKF."</blockquote><div class="tcard-auth"><div class="tcard-av">S</div><div><div class="tcard-name">Students in Ghana</div><div class="tcard-role">DKF Device Recipients</div></div></div></div>
 </div>
 </div>
+</section>
+<!-- Homepage donors recognition -->
+<section class="dkf-home-donors" aria-labelledby="dkf-home-donors-title">
+ <div class="wrap">
+  <h2 id="dkf-home-donors-title">Our Donors</h2>
+  <p class="dkf-home-donors-intro">Thank you to the individuals and organizations helping us put laptops into the hands of children who need them most.</p>
+  <div class="dkf-home-donors-grid">
+   <article class="dkf-home-donor-card">
+    <img src="/images/nyc-seminar-conference-center.png" alt="NYC Seminar and Conference Center logo" loading="lazy">
+    <h3>NYC Seminar and Conference Center</h3>
+    <p>Generously donated 10 refurbished Dell laptops distributed to underserved children in Ghana.</p>
+   </article>
+  </div>
+ </div>
 </section>
 <!-- CTA -->
 <div class="cta"><div class="cta-in rev"><p class="eyebrow eyebrow-amber">Take Action Today</p><h2 style="color:#fff">That laptop in your closet belongs in a classroom.</h2><p>Your donation doesn't just give a laptop — it gives a chance to dream, learn, and achieve.</p><div class="cta-btns"><button class="btn btn-amber btn-lg" onclick="go('donate')">Donate a Device or Money</button><button class="btn btn-ow btn-lg" onclick="go('volunteer')">Become a Volunteer</button></div></div></div>
