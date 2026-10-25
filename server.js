@@ -80,6 +80,41 @@ async function sendMail(payload) {
   return {ok:true,id:body.id};
 }
 
+function volunteerThankYou(data, mailFrom) {
+  const firstName = String(data.first_name || data.firstName || data.name || '').trim().split(/\s+/)[0].slice(0, 70);
+  const greeting = firstName ? `Dear ${firstName},` : 'Dear Volunteer,';
+  const role = String(data.role || '').trim();
+  const roles = {
+    'Community Outreach': {
+      title: 'Community Outreach',
+      detail: 'Thank you for your interest in connecting with communities, spreading awareness of our mission, and helping us reach potential supporters and donors.'
+    },
+    'Grant Writing': {
+      title: 'Grant Writing',
+      detail: 'Thank you for offering your interest in researching funding opportunities and helping us develop compelling grant proposals to support digital access.'
+    },
+    'Content & Photography': {
+      title: 'Content & Photography',
+      detail: 'Thank you for your interest in sharing stories, creating engaging content, and helping document our mission through photography and communications.'
+    },
+    'Open to Any Role': {
+      title: 'Open to Any Role',
+      detail: 'Thank you for your flexibility and willingness to contribute wherever your skills and interests can best support our mission.'
+    }
+  };
+  const selected = roles[role] || roles['Open to Any Role'];
+  const intro = 'Thank you for offering your time and talents to Digital Kids Foundation!';
+  const next = 'We have received your volunteer application. Our team will review it and reach out if there is a suitable opportunity. This message is an acknowledgment, not confirmation of a volunteer placement.';
+  const closing = 'Together, we can help expand access to technology and digital learning for children in need.';
+  return {
+    from: `Digital Kids Foundation <${mailFrom}>`,
+    to: [data.email],
+    subject: `Thank you for your interest in ${selected.title} — Digital Kids Foundation`,
+    text: `${greeting}\n\n${intro}\n\nArea of interest: ${selected.title}\n\n${selected.detail}\n\n${next}\n\n${closing}\n\nWith appreciation,\nDigital Kids Foundation Team\nhttps://digitalkidsfoundation.org`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#183b34;line-height:1.7"><div style="background:#153b34;color:#fff;padding:24px 28px;border-radius:12px 12px 0 0"><h1 style="margin:0;font-size:24px">Digital Kids Foundation</h1></div><div style="padding:28px;border:1px solid #e2ebe7;border-radius:0 0 12px 12px"><p>${esc(greeting)}</p><h2 style="color:#b68a25">Thank you for stepping forward!</h2><p>${esc(intro)}</p><p style="background:#f0f7f5;padding:12px 16px;border-radius:8px"><strong>Your area of interest:</strong> ${esc(selected.title)}</p><p>${esc(selected.detail)}</p><p>${esc(next)}</p><p>${esc(closing)}</p><p>With appreciation,<br><strong>Digital Kids Foundation Team</strong></p><p><a href="https://digitalkidsfoundation.org" style="color:#167a6a">Visit our website</a></p></div></div>`
+  };
+}
+
 app.get('/verify-email', async (req,res) => {
   res.set('Cache-Control','no-store');
   const token = typeof req.query.token === 'string' && /^[a-f0-9]{64}$/.test(req.query.token) ? req.query.token : null;
@@ -91,7 +126,13 @@ app.get('/verify-email', async (req,res) => {
     const result = await sendMail(buildNotification(type,data,process.env.MAIL_FROM || 'website@digitalkidsfoundation.org',process.env.MAIL_TO || 'help@digitalkidsfoundation.org',data.email));
     await store.finish(token,result.ok);
     if (!result.ok) return res.status(502).send(verificationPage('Temporary email issue','Your application has not been forwarded. Please retry the same verification link shortly.'));
-    return res.send(verificationPage('Email verified!','Thank you. Your submission has now been delivered to Digital Kids Foundation.'));
+    if (type === 'volunteer') {
+      try {
+        const thankYou = await sendMail(volunteerThankYou(data, process.env.MAIL_FROM || 'website@digitalkidsfoundation.org'));
+        if (!thankYou.ok) console.error('Volunteer thank-you email could not be delivered for verified application.');
+      } catch (err) { console.error('Volunteer thank-you email error:', err); }
+    }
+    return res.send(verificationPage('Thank you for reaching out!','Your submission has been received by Digital Kids Foundation. Our team will review it and contact you if further information is needed.'));
   } catch(e) { console.error('Email verification failed:',e); return res.status(500).send(verificationPage('Verification unavailable','Please try again later or contact our team.')); }
 });
 function verificationPage(title,message) {
