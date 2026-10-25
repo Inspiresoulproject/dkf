@@ -1041,6 +1041,7 @@ img,video,iframe{max-width:100%}
 <h2 class="form-title">Apply to Volunteer</h2>
 <p class="form-sub">Fill out the form below and our team will reach out within 3 business days to discuss next steps.</p>
 <form action="/api/submit" id="vol-form" method="POST">
+<div class="dkf-turnstile" data-form="vol-form" aria-label="Security verification" style="margin:1rem 0;min-height:66px"></div>
 <!-- Formspree config -->
 <input name="_subject" type="hidden" value="New Volunteer Application — Digital Kids Foundation"/>
 <input name="_next" type="hidden" value=""/>
@@ -1112,6 +1113,7 @@ img,video,iframe{max-width:100%}
 <h2 class="form-title">Choose How You'd Like to Give</h2>
 <p class="form-sub">Choose PayPal for a financial donation, or select Donate a Device to submit a device donation inquiry.</p>
 <form action="/api/submit" id="don-form" method="POST">
+<div class="dkf-turnstile" data-form="don-form" aria-label="Security verification" style="margin:1rem 0;min-height:66px"></div>
 <!-- Formspree config -->
 <input name="_subject" type="hidden" value="New Donation Submission — Digital Kids Foundation"/>
 <input name="_next" type="hidden" value=""/>
@@ -1241,6 +1243,7 @@ img,video,iframe{max-width:100%}
 <h2 class="form-title">We're here to help</h2>
 <p class="form-sub">Fill out the form below and someone from our team will get back to you at help@digitalkidsfoundation.org within 2 business days.</p>
 <form action="/api/submit" id="con-form" method="POST">
+<div class="dkf-turnstile" data-form="con-form" aria-label="Security verification" style="margin:1rem 0;min-height:66px"></div>
 <input name="_subject" type="hidden" value="New Contact Message — Digital Kids Foundation"/>
 <input name="_captcha" type="hidden" value="false"/>
 <div class="fg">
@@ -1625,7 +1628,19 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
     return;
   }
 
-  /* All checks passed — submit via Formspree */
+  /* Require a fresh Cloudflare Turnstile token. */
+  const turnstileId = _dkfTurnstileWidgets[formId];
+  if (typeof window.turnstile === 'undefined' || turnstileId == null) {
+    show('⚠️ Security verification is loading. Please wait and try again.');
+    return;
+  }
+  const securityToken = window.turnstile.getResponse(turnstileId);
+  if (!securityToken) {
+    show('⚠️ Please complete the security verification before submitting.');
+    return;
+  }
+
+  /* All checks passed — submit to the DKF backend */
   const submitBtn = form.querySelector('button[onclick*="validateAndSubmit"]');
   const origText  = submitBtn ? submitBtn.textContent : '';
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending…'; }
@@ -1633,6 +1648,7 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
   /* Serialize form fields and submit to the DKF backend. */
   var payload = { formType: formId === 'vol-form' ? 'volunteer' : (formId === 'don-form' ? 'donation' : 'contact') };
   new FormData(form).forEach(function(val, key) { payload[key] = val; });
+  payload.turnstileToken = securityToken;
 
   fetch('/api/submit', {
     method:  'POST',
@@ -1653,10 +1669,31 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
   })
   .catch(function(err) {
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = origText; }
+    if (window.turnstile && _dkfTurnstileWidgets[formId] != null) window.turnstile.reset(_dkfTurnstileWidgets[formId]);
     console.error('Form error:', err.message);
     show('⚠️ Could not send. Please email help@digitalkidsfoundation.org directly.');
   });
 }
+
+/* Cloudflare Turnstile: public site key is loaded from the DKF server. */
+const _dkfTurnstileWidgets = {};
+window.dkfTurnstileReady = function() {
+  fetch('/api/turnstile-config', {cache:'no-store'})
+    .then(r => r.json())
+    .then(config => {
+      if (!config.enabled || !config.siteKey) throw new Error('Turnstile not configured');
+      document.querySelectorAll('.dkf-turnstile').forEach(el => {
+        _dkfTurnstileWidgets[el.dataset.form] = window.turnstile.render(el, {
+          sitekey: config.siteKey,
+          theme: 'auto',
+          'response-field': false,
+        });
+      });
+    })
+    .catch(() => document.querySelectorAll('.dkf-turnstile').forEach(el => {
+      el.textContent = 'Security verification is temporarily unavailable. Please try again later.';
+    }));
+};
 
 /* ── INIT ────────────────────────────────────── */
 triggerReveal();
@@ -1705,5 +1742,6 @@ stampFormTime('con-form');
   });
 })();
 </script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=dkfTurnstileReady&amp;render=explicit" async defer></script>
 </body>
 </html>

@@ -29,6 +29,29 @@ function validPhone(v) {
 }
 
 app.get('/health', (req,res) => res.json({ok:true}));
+app.get('/api/turnstile-config', (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  const siteKey = process.env.TURNSTILE_SITE_KEY;
+  res.json({ enabled: Boolean(siteKey && process.env.TURNSTILE_SECRET_KEY), siteKey: siteKey || null });
+});
+
+async function verifyTurnstile(token, ip) {
+  if (!process.env.TURNSTILE_SECRET_KEY || !process.env.TURNSTILE_SITE_KEY) return false;
+  if (typeof token !== 'string' || !token || token.length > 2048) return false;
+  const body = new URLSearchParams({ secret: process.env.TURNSTILE_SECRET_KEY, response: token });
+  if (ip) body.set('remoteip', ip);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST', body, signal: controller.signal,
+    });
+    if (!response.ok) return false;
+    const result = await response.json();
+    return result.success === true && result.hostname === 'digitalkidsfoundation.org';
+  } finally { clearTimeout(timer); }
+}
+
 app.post('/api/submit', rateLimit, async (req, res) => {
   try {
     const apiKey = process.env.RESEND_API_KEY;
@@ -38,6 +61,10 @@ app.post('/api/submit', rateLimit, async (req, res) => {
 
     const data = req.body || {};
     if (data.website) return res.json({ok:true}); // honeypot
+    let turnstileOK = false;
+    try { turnstileOK = await verifyTurnstile(data.turnstileToken, req.ip); }
+    catch (err) { console.error('Turnstile verification unavailable:', err.message); }
+    if (!turnstileOK) return res.status(403).json({ok:false,error:'Security verification failed or expired. Please try again.'});
     const type = ['contact','volunteer','donation'].includes(data.formType) ? data.formType : 'website';
     if (typeof data.email !== 'string' || !validEmail(data.email)) {
       return res.status(400).json({ok:false,error:'Please enter a valid email address.'});
@@ -49,7 +76,7 @@ app.post('/api/submit', rateLimit, async (req, res) => {
     const replyTo = emailKey && validEmail(data[emailKey]) ? data[emailKey] : undefined;
     const labels = {contact:'Contact Message', volunteer:'Volunteer Application', donation:'Donation Submission', website:'Website Submission'};
 
-    const ignored = new Set(['formType','website']);
+    const ignored = new Set(['formType','website','turnstileToken','cf-turnstile-response','_subject','_next','_captcha']);
     const rows = Object.entries(data).filter(([k]) => !ignored.has(k)).map(([k,v]) =>
       `<tr><td style="padding:8px;border:1px solid #ddd;font-weight:600">${esc(k.replace(/[_-]+/g,' '))}</td><td style="padding:8px;border:1px solid #ddd">${esc(v)}</td></tr>`
     ).join('');
