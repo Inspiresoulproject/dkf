@@ -1048,8 +1048,8 @@ img,video,iframe{max-width:100%}
 <div class="fg">
 <div class="fl"><label>First Name <span class="req">*</span></label><input class="fc" name="first_name" placeholder="Maria" required="" type="text"/></div>
 <div class="fl"><label>Last Name <span class="req">*</span></label><input class="fc" name="last_name" placeholder="Rodriguez" required="" type="text"/></div>
-<div class="fl"><label>Email Address <span class="req">*</span></label><input class="fc" name="email" placeholder="you@email.com" required="" type="email"/></div>
-<div class="fl"><label>Phone Number</label><input class="fc" name="phone" placeholder="(718) 555-0000" type="tel"/></div>
+<div class="fl"><label>Email Address <span class="req">*</span></label><input class="fc" name="email" placeholder="you@email.com" required="" type="email" maxlength="254" autocomplete="email" inputmode="email"/></div>
+<div class="fl"><label>Phone Number</label><input class="fc" name="phone" placeholder="(718) 555-0000" type="tel" maxlength="25" autocomplete="tel" inputmode="tel"/></div>
 <div class="fl"><label>Borough / City <span class="req">*</span></label><input class="fc" name="location" placeholder="Brooklyn, NY" required="" type="text"/></div>
 <div class="fl"><label>Age Range</label><select class="fc" name="age_range"><option value="">Select…</option><option>16–20</option><option>21–30</option><option>31–45</option><option>46–60</option><option>60+</option></select></div>
 <div class="fl fg-full"><label>Role of Interest <span class="req">*</span></label><select class="fc" name="role" required=""><option value="">Choose a primary role…</option><option>Community Outreach</option><option>Grant Writing</option><option>Content &amp; Photography</option><option>Open to Any Role</option></select></div>
@@ -1119,8 +1119,8 @@ img,video,iframe{max-width:100%}
 <div class="fg">
 <div class="fl"><label>First Name <span class="req">*</span></label><input class="fc" name="first_name" placeholder="James" required="" type="text"/></div>
 <div class="fl"><label>Last Name <span class="req">*</span></label><input class="fc" name="last_name" placeholder="Thompson" required="" type="text"/></div>
-<div class="fl"><label>Email Address <span class="req">*</span></label><input class="fc" name="email" placeholder="you@email.com" required="" type="email"/></div>
-<div class="fl"><label>Phone Number</label><input class="fc" name="phone" placeholder="(718) 555-0000" type="tel"/></div>
+<div class="fl"><label>Email Address <span class="req">*</span></label><input class="fc" name="email" placeholder="you@email.com" required="" type="email" maxlength="254" autocomplete="email" inputmode="email"/></div>
+<div class="fl"><label>Phone Number</label><input class="fc" name="phone" placeholder="(718) 555-0000" type="tel" maxlength="25" autocomplete="tel" inputmode="tel"/></div>
 <div class="fl"><label>Organization / Company</label><input class="fc" name="organization" placeholder="Acme Corp (optional)" type="text"/></div>
 <div class="fl"><label>Donor Type</label><select class="fc" name="donor_type"><option>Individual</option><option>Company / Organization</option><option>School / University</option><option>Government / Public Agency</option></select></div>
 <!-- TOGGLE -->
@@ -1246,8 +1246,8 @@ img,video,iframe{max-width:100%}
 <div class="fg">
 <div class="fl"><label>First Name <span class="req">*</span></label><input class="fc" name="first_name" placeholder="Alex" required="" type="text"/></div>
 <div class="fl"><label>Last Name <span class="req">*</span></label><input class="fc" name="last_name" placeholder="Johnson" required="" type="text"/></div>
-<div class="fl"><label>Email Address <span class="req">*</span></label><input class="fc" name="email" placeholder="you@email.com" required="" type="email"/></div>
-<div class="fl"><label>Phone Number <span style="color:var(--ink-lt);font-weight:400">(optional)</span></label><input class="fc" name="phone" placeholder="(718) 555-0000" type="tel"/></div>
+<div class="fl"><label>Email Address <span class="req">*</span></label><input class="fc" name="email" placeholder="you@email.com" required="" type="email" maxlength="254" autocomplete="email" inputmode="email"/></div>
+<div class="fl"><label>Phone Number <span style="color:var(--ink-lt);font-weight:400">(optional)</span></label><input class="fc" name="phone" placeholder="(718) 555-0000" type="tel" maxlength="25" autocomplete="tel" inputmode="tel"/></div>
 <div class="fl fg-full"><label>Organization / School <span style="color:var(--ink-lt);font-weight:400">(optional)</span></label><input class="fc" name="organization" placeholder="e.g. PS 147, Acme Corp, Brooklyn Community Center" type="text"/></div>
 <div class="fl fg-full"><label>Subject <span class="req">*</span></label>
 <select class="fc" name="subject" required="">
@@ -1536,6 +1536,36 @@ function rateCheck(formId, max, windowMs) {
   return true;
 }
 
+/* Contact field checks: format only, not ownership verification. */
+function dkfValidEmail(value) {
+  const email = value.trim();
+  return email.length <= 254 && /^[A-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$/i.test(email);
+}
+function dkfValidPhone(value) {
+  const phone = value.trim();
+  if (!phone) return true;
+  if (!/^\+?[0-9() .-]+$/.test(phone)) return false;
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 10 && digits.length <= 15;
+}
+function dkfCheckContactField(input) {
+  if (!input) return true;
+  const value = input.value.trim();
+  const valid = input.name === 'email' ? dkfValidEmail(value) : dkfValidPhone(value);
+  input.setCustomValidity(valid ? '' : input.name === 'email'
+    ? 'Enter a valid email address (example: name@example.com).'
+    : 'Enter a valid phone number with 10–15 digits, or leave it blank.');
+  return valid;
+}
+document.querySelectorAll('#vol-form, #don-form, #con-form').forEach(function(form) {
+  ['email','phone'].forEach(function(name) {
+    const input = form.querySelector('[name="' + name + '"]');
+    if (!input) return;
+    input.addEventListener('input', function() { dkfCheckContactField(input); });
+    input.addEventListener('blur', function() { dkfCheckContactField(input); });
+  });
+});
+
 /* Main validation + submit function */
 function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
   const errEl = document.getElementById(errId);
@@ -1574,6 +1604,18 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
     capInp.classList.remove('ok');
     show('❌ Incorrect answer to the security question. Please try again.');
     genCaptcha(capPrefix); /* regenerate on failure */
+    return;
+  }
+
+  /* Validate email and optional phone before sending. */
+  const emailField = form.querySelector('[name="email"]');
+  const phoneField = form.querySelector('[name="phone"]');
+  const emailOK = dkfCheckContactField(emailField);
+  const phoneOK = dkfCheckContactField(phoneField);
+  if (!emailOK || !phoneOK) {
+    const bad = !emailOK ? emailField : phoneField;
+    bad.reportValidity();
+    bad.focus();
     return;
   }
 

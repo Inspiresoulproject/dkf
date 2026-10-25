@@ -16,7 +16,17 @@ function rateLimit(req, res, next) {
   recent.push(now); hits.set(key, recent); next();
 }
 function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function validEmail(v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '')); }
+function validEmail(v) {
+  const email = String(v || '').trim();
+  return email.length <= 254 && /^[A-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?(?:\.[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?)+$/i.test(email);
+}
+function validPhone(v) {
+  const phone = String(v || '').trim();
+  if (!phone) return true;
+  if (!/^\+?[0-9() .-]+$/.test(phone)) return false;
+  const digits = phone.replace(/\D/g, '');
+  return digits.length >= 10 && digits.length <= 15;
+}
 
 app.get('/health', (req,res) => res.json({ok:true}));
 app.post('/api/submit', rateLimit, async (req, res) => {
@@ -29,6 +39,12 @@ app.post('/api/submit', rateLimit, async (req, res) => {
     const data = req.body || {};
     if (data.website) return res.json({ok:true}); // honeypot
     const type = ['contact','volunteer','donation'].includes(data.formType) ? data.formType : 'website';
+    if (typeof data.email !== 'string' || !validEmail(data.email)) {
+      return res.status(400).json({ok:false,error:'Please enter a valid email address.'});
+    }
+    if (data.phone != null && (typeof data.phone !== 'string' || !validPhone(data.phone))) {
+      return res.status(400).json({ok:false,error:'Please enter a valid phone number (10–15 digits), or leave it blank.'});
+    }
     const emailKey = Object.keys(data).find(k => /(^|_|-)email($|_|-)/i.test(k));
     const replyTo = emailKey && validEmail(data[emailKey]) ? data[emailKey] : undefined;
     const labels = {contact:'Contact Message', volunteer:'Volunteer Application', donation:'Donation Submission', website:'Website Submission'};
