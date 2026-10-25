@@ -1404,6 +1404,16 @@ function updateNav(pg) {
 }
 function closeMob() { document.getElementById('mob').classList.remove('open'); const btn=document.getElementById('ham'); btn.setAttribute('aria-expanded','false'); btn.setAttribute('aria-label','Open navigation menu'); }
 
+// Support legacy About/FAQ links redirected to homepage fragments.
+window.addEventListener('DOMContentLoaded', () => {
+  const section = window.location.hash.slice(1).toLowerCase();
+  if (section === 'about' || section === 'faq') go(section);
+});
+window.addEventListener('hashchange', () => {
+  const section = window.location.hash.slice(1).toLowerCase();
+  if (section === 'about' || section === 'faq') go(section);
+});
+
 /* ── NAV SCROLL ──────────────────────────────── */
 window.addEventListener('scroll', () => {
   document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 60);

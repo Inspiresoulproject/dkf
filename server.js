@@ -206,7 +206,34 @@ app.post('/api/submit', rateLimit, async (req, res) => {
   }
 });
 
-app.get('/donation-success', (req,res) => res.sendFile(path.join(__dirname, 'public', 'donation-success', 'index.html')));
-app.use(express.static(path.join(__dirname, 'public')));
-app.get('*', (req,res) => res.sendFile(path.join(__dirname,'public','index.html')));
+// SEO cleanup: redirect only genuine replacements, not unrelated pages.
+app.get(['/about-us', '/about-us/'], (req, res) => res.redirect(301, '/#about'));
+app.get(['/faq', '/faq/'], (req, res) => res.redirect(301, '/#faq'));
+
+// Retired URLs from the previous website with no matching current content.
+const retiredPaths = [
+  '/tag/landing', '/category/volunteer',
+  '/turning-your-emergency-donation-into-instant-aid',
+  '/category/health',
+  '/it-service-case-studies-accelerate-business-fly-success-tech',
+  '/tag/t-shirt', '/category/donation', '/category/charity',
+  '/donations/sed-diam-nonum', '/category/education',
+  '/best-less-published-their-supplier-lists'
+];
+const retired = new Set(retiredPaths);
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  const normalized = req.path.length > 1 ? req.path.replace(/\/+$/, '') : req.path;
+  if (!retired.has(normalized)) return next();
+  res.set('Cache-Control', 'public, max-age=3600');
+  return res.status(410).type('text/plain').send('This page has been permanently removed.');
+});
+
+app.get(['/donation-success', '/donation-success/'], (req,res) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow');
+  res.sendFile(path.join(__dirname, 'public', 'donation-success', 'index.html'));
+});
+app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
+// Do not return a homepage (200) for arbitrary nonexistent paths.
+app.use((req, res) => res.status(404).type('text/plain').send('Page not found.'));
 app.listen(PORT, '0.0.0.0', () => console.log(`DKF listening on ${PORT}`));
