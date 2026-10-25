@@ -1659,7 +1659,11 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
     return res.json().then(function(body) {
       if (res.ok && body.ok) {
         form.style.display = 'none';
-        document.getElementById(successId).style.display = 'block';
+        const success = document.getElementById(successId);
+        if (body.verificationRequired) {
+          success.innerHTML = '<div class="sicon">✉️</div><h3>Check Your Email</h3><p>We sent a verification link to the email address you entered. Please click it within <strong>30 minutes</strong> to complete your submission. DKF will receive your application only after verification.</p><p style="margin-top:.7rem">If you do not see it, check your spam folder.</p>';
+        }
+        success.style.display = 'block';
       } else {
         var msg = body.error || ('Error ' + res.status);
         console.error('DKF form API rejected:', res.status, body);
