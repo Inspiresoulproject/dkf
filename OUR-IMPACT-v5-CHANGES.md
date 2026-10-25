@@ -1,0 +1,1 @@
+DKF v5: Updated Our Story section to reflect 11 laptop donations in Ghana and Brooklyn during 2024–2025, prior to formal nonprofit incorporation on October 3, 2025. Added responsive early-impact statistics. No server logic changed. Confirm exact chronology and donor display name before public release.

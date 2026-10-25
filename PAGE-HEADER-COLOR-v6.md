@@ -1,0 +1,1 @@
+Fixed dark page header titles on About Us, Get Involved, Volunteer, Donate, FAQ and other .ph headers. Applied shared white heading color and responsive sizing to both h1 and h2 in index.html and public/index.html.
