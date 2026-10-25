@@ -207,6 +207,9 @@ app.post('/api/submit', rateLimit, async (req, res) => {
 });
 
 // SEO cleanup: redirect only genuine replacements, not unrelated pages.
+// Legacy WordPress homepage: consolidate its search signals with the current homepage.
+app.get(['/home', '/home/'], (req, res) => res.redirect(301, 'https://digitalkidsfoundation.org/'));
+
 app.get(['/about-us', '/about-us/'], (req, res) => res.redirect(301, '/#about'));
 app.get(['/faq', '/faq/'], (req, res) => res.redirect(301, '/#faq'));
 
