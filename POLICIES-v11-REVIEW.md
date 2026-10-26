@@ -1,0 +1,1 @@
+DKF v11: Added /volunteer-terms/, /privacy/, /terms/ and connected volunteer checkbox and footer links. IMPORTANT: Draft policies; confirm actual privacy practices, retention, provider use, child safeguarding, and have appropriate review before production.
