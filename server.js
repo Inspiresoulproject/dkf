@@ -206,6 +206,11 @@ app.post('/api/submit', rateLimit, async (req, res) => {
   }
 });
 
+// Laptop assistance system: separate routes, preserving existing forms.
+const laptopSystem = require('./laptop-system');
+app.use(laptopSystem.router);
+if (process.env.DATABASE_URL) laptopSystem.init().catch(err => console.error('Laptop schema initialization failed:', err.message));
+
 // SEO cleanup: redirect only genuine replacements, not unrelated pages.
 // Legacy WordPress homepage: consolidate its search signals with the current homepage.
 app.get(['/home', '/home/'], (req, res) => res.redirect(301, 'https://digitalkidsfoundation.org/'));
