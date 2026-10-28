@@ -7,7 +7,8 @@ const emailOK=e=>typeof e==='string'&&e.length<255&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const hash=t=>crypto.createHash('sha256').update(t).digest('hex');
 const statuses=['submitted','under_review','more_information_needed','waitlisted','approved','declined','ready_for_allocation','fulfilled'];
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const emailShell = (heading, content) => `<div style="background:#f0f7f5;padding:30px 12px;font-family:Arial,sans-serif;color:#183b34"><div style="max-width:600px;margin:0 auto"><div style="background:#153b34;color:#fff;padding:25px 28px;border-radius:12px 12px 0 0"><h1 style="margin:0;font-size:24px;color:#fff">Digital Kids Foundation</h1><p style="margin:6px 0 0;color:#e2eee8;font-size:14px">Laptop Assistance Program</p></div><div style="background:#fff;padding:28px;border:1px solid #e2ebe7;border-radius:0 0 12px 12px;line-height:1.7"><h2 style="color:#b68a25;margin-top:0">${heading}</h2>${content}<p style="margin-top:28px">With appreciation,<br><strong>Digital Kids Foundation Team</strong></p><p><a href="https://digitalkidsfoundation.org" style="color:#167a6a">Visit our website</a></p></div></div></div>`;
+const facebookUrl='https://www.facebook.com/digitalkidsfoundation';
+const emailShell = (heading, content) => `<div style="background:#f0f7f5;padding:30px 12px;font-family:Arial,sans-serif;color:#183b34"><div style="max-width:600px;margin:0 auto"><div style="background:#153b34;color:#fff;padding:25px 28px;border-radius:12px 12px 0 0"><h1 style="margin:0;font-size:24px;color:#fff">Digital Kids Foundation</h1><p style="margin:6px 0 0;color:#e2eee8;font-size:14px">Laptop Assistance Program</p></div><div style="background:#fff;padding:28px;border:1px solid #e2ebe7;border-radius:0 0 12px 12px;line-height:1.7"><h2 style="color:#b68a25;margin-top:0">${heading}</h2>${content}<div style="margin-top:28px;padding:18px;background:#f0f7f5;border-radius:10px"><strong>Our mission</strong><p style="margin:8px 0">We believe every child deserves the opportunity to learn, grow, and thrive in a digital world. Through access to technology and digital skills, Digital Kids Foundation works to help bridge the digital divide.</p><p style="margin:10px 0 0">Stay connected for program news, community stories, and future opportunities.</p><p style="margin:14px 0 0"><a href="${facebookUrl}" style="display:inline-block;background:#1877f2;color:#fff;text-decoration:none;font-weight:bold;padding:10px 16px;border-radius:7px">Follow us on Facebook</a></p></div><p style="margin-top:25px">With appreciation,<br><strong>Digital Kids Foundation Team</strong></p><p style="font-size:13px"><a href="https://digitalkidsfoundation.org" style="color:#167a6a">Visit our website</a></p></div></div></div>`;
 const mail=async(to,subject,text,html)=>{const r=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json'},body:JSON.stringify({from:`Digital Kids Foundation <${process.env.MAIL_FROM}>`,to:[to],subject,text,...(html?{html}:{})}),signal:AbortSignal.timeout(12000)});if(!r.ok)throw Error('Email delivery failed');};
 const verifyEmailHtml = (p,link) => emailShell('Confirm your email address',`<p>Hello ${escapeHtml(p.applicant_name)},</p><p>Thank you for applying to the Digital Kids Foundation Laptop Assistance Program. To complete your request, please confirm your email address.</p><p style="text-align:center;margin:28px 0"><a href="${escapeHtml(link)}" style="display:inline-block;background:#b68a25;color:#153b34;text-decoration:none;font-weight:bold;padding:14px 26px;border-radius:8px">Verify my email</a></p><p style="font-size:14px">This verification link expires in <strong>30 minutes</strong>.</p><p style="background:#f0f7f5;padding:14px 16px;border-radius:8px"><strong>Important:</strong> Submitting an application does not guarantee a laptop. Once your email is verified, our team aims to respond within 10 business days.</p><p style="font-size:13px;color:#52645d">If you did not submit this request, you may ignore this email.</p>`);
 const receiptHtml = (p,reference) => emailShell('Application received',`<p>Dear ${escapeHtml(p.applicant_name)},</p><p>Thank you for applying to the Digital Kids Foundation Laptop Assistance Program. Your email has been verified and we have received your application.</p><p style="background:#f0f7f5;padding:14px 16px;border-radius:8px"><strong>Application reference:</strong> ${escapeHtml(reference)}</p><p><strong>What happens next?</strong> Our team will review your request and aims to contact you within <strong>10 business days</strong>. We will contact you directly if we need additional information.</p><p><strong>Please note:</strong> Receiving an application does not guarantee a laptop. Assistance depends on eligibility, donated equipment and available program resources.</p><p>You do not need to check your application status.</p>`);
@@ -22,75 +23,76 @@ const staffReceipt = (p, reference) => {
 const statusEmail = (p,status) => {
   const templates = {
     submitted: {
-      subject:'We have received your laptop assistance request',
-      heading:'Your request has been received',
+      subject:'Thank you for reaching out to Digital Kids Foundation',
+      heading:'We have received your request',
       paragraphs:[
-        'Thank you for your interest in the Digital Kids Foundation Laptop Assistance Program. Your request has been received and is in our review queue.',
-        'Our team aims to respond within 10 business days. No further action is needed unless we contact you for additional information.'
-      ],closing:'Thank you for giving us the opportunity to review your request.'
+        'Thank you for sharing your story and reaching out to Digital Kids Foundation. We know that access to a computer can make a meaningful difference in learning and opportunity.',
+        'Your request is in our review queue. We aim to get back to you within 10 business days. There is nothing more you need to do unless our team contacts you.'
+      ],closing:'We are grateful for the chance to learn about your needs.'
     },
     under_review: {
-      subject:'We are reviewing your laptop assistance request',
-      heading:'Your request is under review',
+      subject:'A caring update from Digital Kids Foundation',
+      heading:'We are taking time to review your request',
       paragraphs:[
-        'We wanted to let you know that our team has started reviewing your laptop assistance request.',
-        'We are carefully considering the information you provided. You do not need to take any action at this stage. We will contact you directly when there is an update.'
-      ],closing:'Thank you for your patience while we complete our review.'
+        'We wanted to share a small update: our team is reviewing the information you provided and considering how our program may be able to help.',
+        'We understand how important digital access can be for schoolwork, creativity, and staying connected. No action is needed right now; we will reach out directly when we have news.'
+      ],closing:'Thank you for your patience and for being part of our community.'
     },
     more_information_needed: {
-      subject:'Action needed: More information about your laptop request',
-      heading:'We need a little more information',
+      subject:'Can we learn a little more about your laptop request?',
+      heading:'A little more information will help us',
       paragraphs:[
-        'Thank you for submitting your laptop assistance request. To continue our review, we need some additional information.',
-        'Please contact our team at help@digitalkidsfoundation.org and include your reference number. We will explain what information is needed. Please do not email sensitive documents unless our team provides a secure way to share them.'
-      ],closing:'We look forward to hearing from you so we can continue the review.'
+        'Thank you for telling us about your needs. We would love to understand a little more so we can give your request a fair and thoughtful review.',
+        'Please email help@digitalkidsfoundation.org with your reference number, and our team will explain what additional information is needed. Please do not send sensitive documents unless we provide a secure way to share them.'
+      ],closing:'We look forward to hearing from you and continuing the conversation.'
     },
     waitlisted: {
-      subject:'Update: Your laptop assistance request is on our waiting list',
+      subject:'An update about your laptop assistance request',
       heading:'Your request is on our waiting list',
       paragraphs:[
-        'We have reviewed your laptop assistance request. At this time, we are unable to move forward because available equipment and program resources are limited.',
-        'Your request has been placed on our waiting list. This is not a guarantee that a laptop will become available. If we are able to move forward, our team will contact you directly.'
-      ],closing:'We appreciate your understanding and continued interest in our program.'
+        'Thank you for trusting us with your request. We recognize how much a laptop could mean to you, your family, or your learners.',
+        'At the moment, donated devices and program resources are limited, so we have placed your request on our waiting list. We cannot promise that a laptop will become available, but we will contact you directly if we can move forward.'
+      ],closing:'We appreciate your understanding as we work to reach more learners.'
     },
     approved: {
-      subject:'Your laptop assistance request passed initial review',
-      heading:'Your request passed initial review',
+      subject:'Good news about the review of your laptop request',
+      heading:'Your request has passed initial review',
       paragraphs:[
-        'We are pleased to let you know that your laptop assistance request has passed our initial review.',
-        'This is an approval to proceed to the next stage, not a confirmation of a laptop award. Equipment availability and any final eligibility checks still apply. Our team will contact you if a laptop can be allocated and to discuss next steps.'
-      ],closing:'Thank you for your patience as we work through the next stage.'
+        'We are happy to share that your laptop assistance request has passed our initial review. Thank you for giving us the opportunity to learn about your goals.',
+        'This means your request can move to the next stage; it is not yet a promise of a laptop. Final eligibility checks and donated equipment availability still apply. We will contact you if a device can be allocated.'
+      ],closing:'We are encouraged by your commitment to learning and opportunity.'
     },
     declined: {
-      subject:'Decision on your laptop assistance request',
-      heading:'A decision about your request',
+      subject:'A personal update from Digital Kids Foundation',
+      heading:'Thank you for letting us consider your request',
       paragraphs:[
-        'Thank you for taking the time to apply to the Digital Kids Foundation Laptop Assistance Program.',
-        'After reviewing your request, we regret that we are unable to offer laptop assistance at this time. We know this may be disappointing, and we appreciate the opportunity to consider your needs.'
-      ],closing:'We wish you and your family or organization all the best.'
+        'Thank you for sharing your needs with Digital Kids Foundation. We understand that reliable access to technology can open doors, and we appreciate the time you took to apply.',
+        'After careful review, we are sorry that we are unable to provide laptop assistance for this request at this time. We know this may be disappointing. This decision does not diminish the importance of your goals or the challenges you shared.'
+      ],closing:'We wish you continued success and hope you will stay connected with our community.'
     },
     ready_for_allocation: {
-      subject:'Next steps for your laptop assistance request',
-      heading:'Your request is moving to equipment allocation',
+      subject:'We are preparing the next steps for your laptop request',
+      heading:'Your request is moving forward',
       paragraphs:[
-        'Your laptop assistance request has progressed to the equipment allocation stage.',
-        'Our team is checking device availability and any remaining arrangements. Please wait for us to contact you before making pickup or delivery plans. This update does not confirm a distribution date.'
-      ],closing:'We look forward to sharing the next steps when arrangements are confirmed.'
+        'We are pleased to let you know that your request has reached the equipment allocation stage. We are checking available devices and the remaining arrangements.',
+        'Please wait for a direct message from our team before making pickup or delivery plans. We have not confirmed a distribution date yet.'
+      ],closing:'Thank you for your patience as we work to make digital learning more accessible.'
     },
     fulfilled: {
-      subject:'Your laptop assistance request is complete',
+      subject:'Wishing you success on your digital learning journey',
       heading:'Your laptop assistance request is complete',
       paragraphs:[
-        'Our records show that the laptop assistance associated with your request has been completed.',
-        'We hope the equipment supports learning and access to digital opportunities. If you believe this message was sent in error, please contact help@digitalkidsfoundation.org and include your reference number.'
-      ],closing:'Thank you for being part of the Digital Kids Foundation community.'
+        'We are delighted that the assistance connected with your request has been completed. We hope this technology helps open doors to learning, creativity, and new possibilities.',
+        'If you believe this update was sent in error, please email help@digitalkidsfoundation.org and include your reference number.'
+      ],closing:'Thank you for allowing Digital Kids Foundation to be a small part of your journey.'
     }
   };
   const t=templates[status];
   if(!t)throw Error('Unsupported application status');
   const greeting=`Dear ${p.applicant_name},`;
-  const footer='Kind regards,\nDigital Kids Foundation Team';
-  const body=[greeting,...t.paragraphs,`Application reference: ${p.reference}`,t.closing,footer].join('\n\n');
+  const mission='Our mission is to help bridge the digital divide by expanding access to technology and digital learning opportunities for children and communities.';
+  const follow='Follow Digital Kids Foundation on Facebook for program news and updates: '+facebookUrl;
+  const body=[greeting,...t.paragraphs,`Application reference: ${p.reference}`,t.closing,mission,follow,'With appreciation,\nDigital Kids Foundation Team'].join('\n\n');
   const html=emailShell(t.heading,`<p>${escapeHtml(greeting)}</p>${t.paragraphs.map(v=>`<p>${escapeHtml(v)}</p>`).join('')}<p style="background:#f0f7f5;padding:14px 16px;border-radius:8px"><strong>Application reference:</strong> ${escapeHtml(p.reference)}</p><p>${escapeHtml(t.closing)}</p>`);
   return {subject:t.subject,body,html};
 };
