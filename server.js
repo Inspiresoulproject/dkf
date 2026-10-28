@@ -241,6 +241,9 @@ app.get(['/donation-success', '/donation-success/'], (req,res) => {
   res.set('X-Robots-Tag', 'noindex, nofollow');
   res.sendFile(path.join(__dirname, 'public', 'donation-success', 'index.html'));
 });
+// Verify Access identity at origin as well as at the Cloudflare edge.
+const {verifyAdmin:verifyDkfAdmin}=require('./dkf-access-auth');
+app.use(['/laptop-admin','/laptop-admin/','/laptop-admin/index.html'],verifyDkfAdmin);
 app.use(express.static(path.join(__dirname, 'public'), { index: 'index.html' }));
 // Do not return a homepage (200) for arbitrary nonexistent paths.
 app.use((req, res) => res.status(404).type('text/plain').send('Page not found.'));
