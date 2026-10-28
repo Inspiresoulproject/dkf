@@ -20,20 +20,79 @@ const staffReceipt = (p, reference) => {
   return 'New verified DKF Laptop Assistance application\n\n' + Object.entries(labels).map(([key,label])=>`${label}: ${fields[key] == null || fields[key] === '' ? 'Not provided' : String(fields[key])}`).join('\n') + '\n\nReview the application in the secured DKF management system.';
 };
 const statusEmail = (p,status) => {
-  const states = {
-    submitted:['Application received','We have received your laptop assistance request and will review it. We aim to respond within 10 business days.'],
-    under_review:['Your request is being reviewed','Our team is reviewing the information you provided. No action is needed at this time.'],
-    more_information_needed:['Additional information needed','Our team needs more information to continue reviewing your request. Please reply to this email or contact DKF, and include your reference number.'],
-    waitlisted:['Your request is on our waiting list','Your request remains on our waiting list. We will contact you if equipment becomes available and we can move forward.'],
-    approved:['Your request has been approved for the next stage','Your request has passed our review. This does not guarantee that a laptop is available or that distribution is scheduled. We will contact you about next steps.'],
-    declined:['Update on your laptop assistance request','After reviewing your request, we are unable to offer laptop assistance at this time. Thank you for your interest in the program.'],
-    ready_for_allocation:['Your request is moving to the equipment stage','Your request is moving to the equipment allocation stage. Our team will contact you to confirm availability and next steps.'],
-    fulfilled:['Laptop assistance update — completed','Our records show that the laptop assistance for your request has been completed. If this is incorrect, please contact DKF.']
+  const templates = {
+    submitted: {
+      subject:'We have received your laptop assistance request',
+      heading:'Your request has been received',
+      paragraphs:[
+        'Thank you for your interest in the Digital Kids Foundation Laptop Assistance Program. Your request has been received and is in our review queue.',
+        'Our team aims to respond within 10 business days. No further action is needed unless we contact you for additional information.'
+      ],closing:'Thank you for giving us the opportunity to review your request.'
+    },
+    under_review: {
+      subject:'We are reviewing your laptop assistance request',
+      heading:'Your request is under review',
+      paragraphs:[
+        'We wanted to let you know that our team has started reviewing your laptop assistance request.',
+        'We are carefully considering the information you provided. You do not need to take any action at this stage. We will contact you directly when there is an update.'
+      ],closing:'Thank you for your patience while we complete our review.'
+    },
+    more_information_needed: {
+      subject:'Action needed: More information about your laptop request',
+      heading:'We need a little more information',
+      paragraphs:[
+        'Thank you for submitting your laptop assistance request. To continue our review, we need some additional information.',
+        'Please contact our team at help@digitalkidsfoundation.org and include your reference number. We will explain what information is needed. Please do not email sensitive documents unless our team provides a secure way to share them.'
+      ],closing:'We look forward to hearing from you so we can continue the review.'
+    },
+    waitlisted: {
+      subject:'Update: Your laptop assistance request is on our waiting list',
+      heading:'Your request is on our waiting list',
+      paragraphs:[
+        'We have reviewed your laptop assistance request. At this time, we are unable to move forward because available equipment and program resources are limited.',
+        'Your request has been placed on our waiting list. This is not a guarantee that a laptop will become available. If we are able to move forward, our team will contact you directly.'
+      ],closing:'We appreciate your understanding and continued interest in our program.'
+    },
+    approved: {
+      subject:'Your laptop assistance request passed initial review',
+      heading:'Your request passed initial review',
+      paragraphs:[
+        'We are pleased to let you know that your laptop assistance request has passed our initial review.',
+        'This is an approval to proceed to the next stage, not a confirmation of a laptop award. Equipment availability and any final eligibility checks still apply. Our team will contact you if a laptop can be allocated and to discuss next steps.'
+      ],closing:'Thank you for your patience as we work through the next stage.'
+    },
+    declined: {
+      subject:'Decision on your laptop assistance request',
+      heading:'A decision about your request',
+      paragraphs:[
+        'Thank you for taking the time to apply to the Digital Kids Foundation Laptop Assistance Program.',
+        'After reviewing your request, we regret that we are unable to offer laptop assistance at this time. We know this may be disappointing, and we appreciate the opportunity to consider your needs.'
+      ],closing:'We wish you and your family or organization all the best.'
+    },
+    ready_for_allocation: {
+      subject:'Next steps for your laptop assistance request',
+      heading:'Your request is moving to equipment allocation',
+      paragraphs:[
+        'Your laptop assistance request has progressed to the equipment allocation stage.',
+        'Our team is checking device availability and any remaining arrangements. Please wait for us to contact you before making pickup or delivery plans. This update does not confirm a distribution date.'
+      ],closing:'We look forward to sharing the next steps when arrangements are confirmed.'
+    },
+    fulfilled: {
+      subject:'Your laptop assistance request is complete',
+      heading:'Your laptop assistance request is complete',
+      paragraphs:[
+        'Our records show that the laptop assistance associated with your request has been completed.',
+        'We hope the equipment supports learning and access to digital opportunities. If you believe this message was sent in error, please contact help@digitalkidsfoundation.org and include your reference number.'
+      ],closing:'Thank you for being part of the Digital Kids Foundation community.'
+    }
   };
-  const [heading,message]=states[status]||states.under_review;
-  const body=`Dear ${p.applicant_name},\n\n${message}\n\nYour reference number: ${p.reference}\n\nLaptop assistance is subject to availability and program eligibility. You do not need to check your application status online; our team will contact you directly.\n\nSincerely,\nDigital Kids Foundation Team`;
-  const html=emailShell(heading,`<p>Dear ${escapeHtml(p.applicant_name)},</p><p>${escapeHtml(message)}</p><p style="background:#f0f7f5;padding:14px 16px;border-radius:8px"><strong>Your reference:</strong> ${escapeHtml(p.reference)}</p><p>Laptop assistance is subject to equipment availability and program eligibility. You do not need to check your application status online; our team will contact you directly.</p><p>Warm regards,<br><strong>Digital Kids Foundation Team</strong></p>`);
-  return {subject:`DKF Laptop Assistance — ${heading}`,body,html};
+  const t=templates[status];
+  if(!t)throw Error('Unsupported application status');
+  const greeting=`Dear ${p.applicant_name},`;
+  const footer='Kind regards,\nDigital Kids Foundation Team';
+  const body=[greeting,...t.paragraphs,`Application reference: ${p.reference}`,t.closing,footer].join('\n\n');
+  const html=emailShell(t.heading,`<p>${escapeHtml(greeting)}</p>${t.paragraphs.map(v=>`<p>${escapeHtml(v)}</p>`).join('')}<p style="background:#f0f7f5;padding:14px 16px;border-radius:8px"><strong>Application reference:</strong> ${escapeHtml(p.reference)}</p><p>${escapeHtml(t.closing)}</p>`);
+  return {subject:t.subject,body,html};
 };
 const schema=`CREATE TABLE IF NOT EXISTS laptop_applications (id BIGSERIAL PRIMARY KEY,reference TEXT UNIQUE NOT NULL,kind TEXT NOT NULL CHECK(kind IN ('individual','school','organization')),applicant_name TEXT NOT NULL,email TEXT NOT NULL,phone TEXT,country TEXT NOT NULL CHECK(country IN ('US','GH')),location TEXT NOT NULL,organization TEXT,child_age INTEGER,grade TEXT,quantity INTEGER NOT NULL CHECK(quantity BETWEEN 1 AND 1000),computer_access TEXT NOT NULL, internet_access TEXT,need TEXT NOT NULL,impact TEXT NOT NULL,financial_difficulty TEXT,consent BOOLEAN NOT NULL DEFAULT FALSE,status TEXT NOT NULL DEFAULT 'submitted',created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
 CREATE TABLE IF NOT EXISTS laptop_tokens(id BIGSERIAL PRIMARY KEY,token_hash TEXT UNIQUE NOT NULL,kind TEXT NOT NULL,payload JSONB,application_id BIGINT REFERENCES laptop_applications(id),expires_at TIMESTAMPTZ NOT NULL,used_at TIMESTAMPTZ);
