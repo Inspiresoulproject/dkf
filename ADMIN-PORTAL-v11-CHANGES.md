@@ -1,0 +1,1 @@
+DKF Admin Portal v11: replaced the placeholder DKF sidebar mark with the original white logo embedded in the public website; extracted the website favicon and added it to the admin page; replaced six character icons with consistent outlined SVG icons. Authentication, APIs, database, and email templates are unchanged.
