@@ -207,6 +207,87 @@ app.post('/api/submit', rateLimit, async (req, res) => {
 });
 
 // Laptop assistance system: separate routes, preserving existing forms.
+
+// Public Turnstile verification page for the DKF mobile app.
+// The backend must still validate the Turnstile token.
+app.get('/mobile-turnstile', (req, res) => {
+  const siteKey = process.env.TURNSTILE_SITE_KEY || '';
+
+  res.set('Cache-Control', 'no-store');
+
+  res.set(
+    'Content-Security-Policy',
+    "default-src 'none'; " +
+    "script-src 'unsafe-inline' https://challenges.cloudflare.com; " +
+    "frame-src https://challenges.cloudflare.com; " +
+    "connect-src https://challenges.cloudflare.com; " +
+    "style-src 'unsafe-inline'; " +
+    "img-src data: https://challenges.cloudflare.com"
+  );
+
+  res.type('html').send(`
+    <!doctype html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <style>
+          body {
+            margin: 0;
+            padding: 12px;
+            background: white;
+            font: 14px system-ui;
+            color: #103b2f;
+          }
+          #widget {
+            min-height: 70px;
+          }
+        </style>
+      </head>
+      <body>
+        <div id="widget"></div>
+
+        <script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+          async defer>
+        </script>
+
+        <script>
+          function send(type, token) {
+            if (window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(
+                JSON.stringify({ type, token })
+              );
+            }
+          }
+
+          function mount() {
+            if (!window.turnstile) {
+              setTimeout(mount, 100);
+              return;
+            }
+
+            window.turnstile.render('#widget', {
+              sitekey: ${JSON.stringify(siteKey)},
+              callback: function(token) {
+                send('turnstile', token);
+              },
+              'expired-callback': function() {
+                send('expired', '');
+              },
+              'error-callback': function() {
+                send('error', '');
+              }
+            });
+          }
+
+          mount();
+        </script>
+      </body>
+    </html>
+  `);
+});
+
+
 const laptopSystem = require('./laptop-system');
 app.use(laptopSystem.router);
 if (process.env.DATABASE_URL) laptopSystem.init().catch(err => console.error('Laptop schema initialization failed:', err.message));
