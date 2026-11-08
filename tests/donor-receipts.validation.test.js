@@ -7,6 +7,7 @@ Module._load=function(request,parent,isMain){
   if(request==='express')return {Router:()=>({use(){},get(){},post(){},patch(){}})};
   if(request==='pg')return {Pool:class {}};
   if(request==='pdfkit')return class {};
+  if(request==='qrcode')return {toBuffer:async()=>Buffer.from('test-qrcode')};
   if(request==='./dkf-access-auth')return {verifyAdmin:(req,res,next)=>next()};
   return original.call(this,request,parent,isMain);
 };

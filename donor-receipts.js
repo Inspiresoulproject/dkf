@@ -8,10 +8,44 @@ const express = require('express');
 const { Pool } = require('pg');
 const PDFDocument = require('pdfkit');
 const path = require('path');
+const crypto = require('crypto');
+const QRCode = require('qrcode');
 const { verifyAdmin } = require('./dkf-access-auth');
 const router = express.Router();
 const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5, connectionTimeoutMillis: 5000 });
 const logo = path.join(__dirname, 'assets', 'dkf-logo.png');
+const verificationOrigin = 'https://digitalkidsfoundation.org';
+const verifyUrl = row => `${verificationOrigin}/verify-donation/${encodeURIComponent(row.reference)}?code=${encodeURIComponent(row.verification_code)}`;
+// One stable 32+-byte secret, set ONLY in Coolify. Never put this key in git or on the client.
+function signingKey() {
+  const hex = String(process.env.DKF_RECEIPT_SIGNING_KEY || '');
+  return /^[a-f0-9]{64,}$/i.test(hex) && hex.length % 2 === 0 ? Buffer.from(hex,'hex') : null;
+}
+function canonicalReceipt(r) {
+  // Stable serialization allows us to detect edits to issued donation details.
+  const date=r.donation_date instanceof Date ? r.donation_date.toISOString().slice(0,10) : String(r.donation_date).slice(0,10);
+  const money=x=>x==null ? null : Number(x).toFixed(2);
+  return JSON.stringify([
+    'DKF-RECEIPT-V1',r.reference,r.verification_code,r.donor_name,r.donor_email,
+    r.document_type,r.donation_type,date,r.quantity==null?null:Number(r.quantity),
+    r.description,money(r.monetary_amount),r.consideration_type,
+    r.consideration_description||null,money(r.consideration_value)
+  ]);
+}
+function sealReceipt(r,key=signingKey()) {
+  if(!key)throw Error('Receipt signing key missing or invalid. Set DKF_RECEIPT_SIGNING_KEY in Coolify.');
+  return crypto.createHmac('sha256',key).update(canonicalReceipt(r),'utf8').digest('hex');
+}
+function sealedRowValid(r) {
+  const key=signingKey();
+  if(!key || !r.verification_seal || !r.issued_pdf_sha256 || !r.issued_pdf || !r.verification_code)return false;
+  const sig=Buffer.from(String(r.verification_seal),'hex');
+  if(sig.length!==32)return false;
+  const expected=Buffer.from(sealReceipt(r,key),'hex');
+  const currentPdf=crypto.createHash('sha256').update(r.issued_pdf).digest('hex');
+  return crypto.timingSafeEqual(sig,expected) && currentPdf===r.issued_pdf_sha256;
+}
+
 const allowedTypes = new Set(['laptop', 'desktop', 'tablet', 'accessories', 'other_equipment', 'monetary', 'other']);
 const display = { laptop:'Laptop', desktop:'Desktop computer', tablet:'Tablet', accessories:'Computer accessories', other_equipment:'Other computer equipment', monetary:'Monetary contribution', other:'Other donated property' };
 const emailOK = value => typeof value === 'string' && value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -44,10 +78,28 @@ const schema = `CREATE TABLE IF NOT EXISTS dkf_donor_receipts (
   last_error TEXT,
   issued_pdf BYTEA,
   last_previewed_at TIMESTAMPTZ,
+  verification_code TEXT UNIQUE,
+  verification_seal TEXT,
+  issued_pdf_sha256 TEXT,
+  revoked_at TIMESTAMPTZ,
+  revoked_by TEXT,
+  revoked_reason TEXT,
   CONSTRAINT dkf_receipt_status CHECK(status IN ('draft','sending','sent','needs_review'))
 );
 ALTER TABLE dkf_donor_receipts ADD COLUMN IF NOT EXISTS issued_pdf BYTEA;
 ALTER TABLE dkf_donor_receipts ADD COLUMN IF NOT EXISTS last_previewed_at TIMESTAMPTZ;
+ALTER TABLE dkf_donor_receipts ADD COLUMN IF NOT EXISTS verification_code TEXT;
+ALTER TABLE dkf_donor_receipts ADD COLUMN IF NOT EXISTS verification_seal TEXT;
+ALTER TABLE dkf_donor_receipts ADD COLUMN IF NOT EXISTS issued_pdf_sha256 TEXT;
+ALTER TABLE dkf_donor_receipts ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMPTZ;
+ALTER TABLE dkf_donor_receipts ADD COLUMN IF NOT EXISTS revoked_by TEXT;
+ALTER TABLE dkf_donor_receipts ADD COLUMN IF NOT EXISTS revoked_reason TEXT;
+CREATE UNIQUE INDEX IF NOT EXISTS dkf_receipts_verify_code_uq ON dkf_donor_receipts(verification_code) WHERE verification_code IS NOT NULL;
+CREATE TABLE IF NOT EXISTS dkf_receipt_audit (
+  id BIGSERIAL PRIMARY KEY, receipt_id BIGINT NOT NULL REFERENCES dkf_donor_receipts(id),
+  event TEXT NOT NULL, actor TEXT NOT NULL, detail TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS dkf_receipt_audit_idx ON dkf_receipt_audit(receipt_id,created_at DESC);
 CREATE INDEX IF NOT EXISTS dkf_receipts_created_idx ON dkf_donor_receipts(created_at DESC);`;
 let schemaPromise;
 function ensureSchema(){ if(!schemaPromise) schemaPromise=pool.query(schema).catch(e=>{schemaPromise=null;throw e;}); return schemaPromise; }
@@ -86,7 +138,8 @@ function validate(data) {
     consideration_value:consideration_type==='provided'?consideration_value:null };
 }
 
-function receiptPdf(receipt, draft=false){
+async function receiptPdf(receipt, draft=false){
+  const qr=receipt.verification_code && receipt.reference ? await QRCode.toBuffer(verifyUrl(receipt),{type:'png',width:240,margin:1,errorCorrectionLevel:'M'}) : null;
   return new Promise((resolve,reject)=>{
     const doc=new PDFDocument({size:'LETTER',margin:48,autoFirstPage:true,info:{Title:`DKF ${draft?'Draft ':''}Donation Acknowledgment ${receipt.reference}`,Author:'Digital Kids Foundation Inc.'}});
     const chunks=[]; doc.on('data',c=>chunks.push(c)); doc.on('error',reject); doc.on('end',()=>resolve(Buffer.concat(chunks)));
@@ -137,7 +190,15 @@ function receiptPdf(receipt, draft=false){
     doc.moveTo(48,667).lineTo(275,667).strokeColor(border).stroke();
     doc.font('Helvetica-Bold').fontSize(9).fillColor(green).text('Authorized Representative',48,675);
     doc.font('Helvetica').fontSize(8).fillColor(grey).text(draft?'Draft - not signed':`Issued by ${receipt.approved_by || 'Digital Kids Foundation Inc.'}`,48,688,{width:360});
-    doc.moveTo(48,709).lineTo(564,709).strokeColor(border).stroke();
+    if(qr){
+      // Scanning checks the authoritative DKF-issued record; a copied QR alone is not proof.
+      doc.rect(304,662,190,43).fill('#FFFFFF');
+      doc.font('Helvetica-Bold').fontSize(8).fillColor(green).text('VERIFY THIS DOCUMENT',306,668,{width:180});
+      doc.font('Helvetica').fontSize(7).fillColor(grey).text('digitalkidsfoundation.org/verify-donation',306,681,{width:184});
+      doc.font('Helvetica').fontSize(7).fillColor(grey).text(`Code: ${receipt.verification_code.slice(0,8).toUpperCase()}...`,306,692,{width:180});
+      doc.image(qr,501,654,{width:54,height:54});
+    }
+    doc.moveTo(48,709).lineTo(491,709).strokeColor(border).stroke();
     doc.fontSize(8).fillColor(green).text('Digital Kids Foundation Inc.  |  Brooklyn, New York',48,717);
     doc.fillColor(grey).text('digitalkidsfoundation.org',416,717,{width:148,align:'right'});
     if(draft)doc.font('Helvetica-Bold').fontSize(7.2).fillColor('#8D5811').text('DRAFT - DO NOT EMAIL OR USE FOR TAX PURPOSES',48,731,{width:516,align:'center'});
@@ -160,7 +221,7 @@ function receiptPdf(receipt, draft=false){
 }
 
 const fields=['donor_name','donor_email','document_type','donation_type','donation_date','quantity','description','monetary_amount','consideration_type','consideration_description','consideration_value'];
-const exposed = 'id,reference,donor_name,donor_email,document_type,donation_type,donation_date,quantity,description,monetary_amount,consideration_type,consideration_description,consideration_value,status,created_by,approved_by,resend_email_id,sent_at,created_at,updated_at';
+const exposed = 'id,reference,donor_name,donor_email,document_type,donation_type,donation_date,quantity,description,monetary_amount,consideration_type,consideration_description,consideration_value,status,created_by,approved_by,resend_email_id,sent_at,created_at,updated_at,verification_code,revoked_at,revoked_by,revoked_reason';
 const api = '/api/laptops/admin/donor-receipts';
 router.use(api, verifyAdmin);
 // Same-origin JSON writes prevent off-site pages from posting with an authenticated admin session.
@@ -174,10 +235,17 @@ router.use(api, (req,res,next) => {
   next();
 });
 router.get(api,async(req,res)=>{try{await ensureSchema();res.set('Cache-Control','no-store').json((await pool.query(`SELECT ${exposed} FROM dkf_donor_receipts ORDER BY id DESC LIMIT 500`)).rows);}catch(e){console.error('DKF receipt list:',e);res.status(500).json({error:'Unable to list receipts'});}});
-router.post(api,async(req,res)=>{try{await ensureSchema();const d=validate(req.body);const client=await pool.connect();try{await client.query('BEGIN');const vals=fields.map(k=>d[k]);let r=await client.query(`INSERT INTO dkf_donor_receipts (${fields.join(',')},created_by) VALUES (${fields.map((_,i)=>'$'+(i+1)).join(',')},$12) RETURNING id,donation_date`,[...vals,req.dkfAdminEmail||'admin']);const id=r.rows[0].id;const year=String(d.donation_date).slice(0,4);const reference=`DKF-${year}-${String(id).padStart(6,'0')}`;r=await client.query(`UPDATE dkf_donor_receipts SET reference=$1 WHERE id=$2 RETURNING ${exposed}`,[reference,id]);await client.query('COMMIT');res.status(201).json(r.rows[0]);}catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}}catch(e){res.status(e.status||500).json({error:e.status?e.message:'Unable to save draft'});}});
+router.post(api,async(req,res)=>{try{await ensureSchema();const d=validate(req.body);const client=await pool.connect();try{await client.query('BEGIN');const vals=fields.map(k=>d[k]);let r=await client.query(`INSERT INTO dkf_donor_receipts (${fields.join(',')},created_by,verification_code) VALUES (${fields.map((_,i)=>'$'+(i+1)).join(',')},$12,$13) RETURNING id,donation_date`,[...vals,req.dkfAdminEmail||'admin',crypto.randomBytes(16).toString('hex')]);const id=r.rows[0].id;const year=String(d.donation_date).slice(0,4);const reference=`DKF-${year}-${String(id).padStart(6,'0')}`;r=await client.query(`UPDATE dkf_donor_receipts SET reference=$1 WHERE id=$2 RETURNING ${exposed}`,[reference,id]);await client.query('COMMIT');res.status(201).json(r.rows[0]);}catch(e){await client.query('ROLLBACK');throw e;}finally{client.release();}}catch(e){res.status(e.status||500).json({error:e.status?e.message:'Unable to save draft'});}});
 router.get(api+'/:id',async(req,res)=>{try{await ensureSchema();const r=await pool.query(`SELECT ${exposed} FROM dkf_donor_receipts WHERE id=$1`,[req.params.id]);if(!r.rows.length)return res.status(404).json({error:'Not found'});res.set('Cache-Control','no-store').json(r.rows[0]);}catch(e){res.status(500).json({error:'Unable to retrieve receipt'});}});
 router.patch(api+'/:id',async(req,res)=>{try{await ensureSchema();const d=validate(req.body);const q=await pool.query(`UPDATE dkf_donor_receipts SET ${fields.map((k,i)=>`${k}=$${i+1}`).join(',')},updated_at=NOW() WHERE id=$12 AND status='draft' RETURNING ${exposed}`,[...fields.map(k=>d[k]),req.params.id]);if(!q.rows.length)return res.status(409).json({error:'Only drafts may be edited'});res.json(q.rows[0]);}catch(e){res.status(e.status||500).json({error:e.status?e.message:'Unable to update draft'});}});
-router.get(api+'/:id/pdf',async(req,res)=>{try{await ensureSchema();const r=await pool.query(`SELECT ${exposed},issued_pdf FROM dkf_donor_receipts WHERE id=$1`,[req.params.id]);if(!r.rows.length)return res.status(404).json({error:'Not found'});if(r.rows[0].status!=='draft'&&r.rows[0].status!=='sent')return res.status(409).json({error:'Delivery status needs review'});const b=r.rows[0].status==='sent' && r.rows[0].issued_pdf ? r.rows[0].issued_pdf : await receiptPdf(r.rows[0],r.rows[0].status!=='sent');
+router.get(api+'/:id/pdf',async(req,res)=>{try{await ensureSchema();const r=await pool.query(`SELECT ${exposed},issued_pdf FROM dkf_donor_receipts WHERE id=$1`,[req.params.id]);if(!r.rows.length)return res.status(404).json({error:'Not found'});if(r.rows[0].status!=='draft'&&r.rows[0].status!=='sent')return res.status(409).json({error:'Delivery status needs review'});
+if(r.rows[0].status==='draft' && !r.rows[0].verification_code) {
+  const code=crypto.randomBytes(16).toString('hex');
+  const added=await pool.query("UPDATE dkf_donor_receipts SET verification_code=$2 WHERE id=$1 AND status='draft' AND verification_code IS NULL RETURNING verification_code",[r.rows[0].id,code]);
+  if(added.rowCount)r.rows[0].verification_code=added.rows[0].verification_code;
+  else {const lookup=await pool.query("SELECT verification_code FROM dkf_donor_receipts WHERE id=$1 AND status='draft'",[r.rows[0].id]);if(!lookup.rows.length)return res.status(409).json({error:'Draft status changed; reload'});r.rows[0].verification_code=lookup.rows[0].verification_code;}
+}
+const b=r.rows[0].status==='sent' && r.rows[0].issued_pdf ? r.rows[0].issued_pdf : await receiptPdf(r.rows[0],r.rows[0].status!=='sent');
 if(r.rows[0].status==='draft'){
   // PostgreSQL stores microseconds, while node-postgres serializes JS Dates to milliseconds.
   // Compare at the precision actually transported to the browser.
@@ -191,27 +259,88 @@ res.set('Cache-Control','private, no-store').set('X-Frame-Options','SAMEORIGIN')
 router.post(api+'/:id/send',async(req,res)=>{
   // Explicit two-step operation: preview first, then check factual confirmations and send.
   if(req.body?.confirmedReceived!==true||req.body?.confirmedPreview!==true||!req.body?.expectedUpdatedAt)return res.status(400).json({error:'Review the current PDF and confirm the donation was received before sending'});
+  // Without a server-only signing key, new receipts MUST NOT be issued.
+  if(!signingKey())return res.status(503).json({error:'Receipt verification is not configured. Ask an administrator to set DKF_RECEIPT_SIGNING_KEY in Coolify before issuing documents.'});
   let receipt;
   try{
     await ensureSchema(); const q=await pool.query(`UPDATE dkf_donor_receipts SET status='sending',approved_by=$2,updated_at=NOW() WHERE id=$1 AND status='draft' AND date_trunc('milliseconds',updated_at)=$3::timestamptz AND last_previewed_at >= updated_at RETURNING ${exposed}`,[req.params.id,req.dkfAdminEmail||'admin',req.body.expectedUpdatedAt]);
     if(!q.rows.length)return res.status(409).json({error:'Receipt was not sent: it is not an eligible, freshly previewed draft. Reopen the receipt, generate the PDF again, and reconfirm. If delivery was previously attempted, verify it in Resend first.'});
     receipt=q.rows[0];
+    if(!receipt.verification_code)throw Error('No verification code: preview this receipt again before sending.');
+    const seal=sealReceipt(receipt);
     const pdf=await receiptPdf(receipt,false);
-    await pool.query("UPDATE dkf_donor_receipts SET issued_pdf=$2 WHERE id=$1 AND status='sending'",[receipt.id,pdf]);
+    const pdfSha=crypto.createHash('sha256').update(pdf).digest('hex');
+    await pool.query("UPDATE dkf_donor_receipts SET issued_pdf=$2,verification_seal=$3,issued_pdf_sha256=$4 WHERE id=$1 AND status='sending'",[receipt.id,pdf,seal,pdfSha]);
     if(!process.env.RESEND_API_KEY || !process.env.MAIL_FROM)throw Error('Resend email sender is not configured');
     const from=`Digital Kids Foundation <${process.env.MAIL_FROM}>`;
     const subject=receipt.document_type==='acknowledgment_letter'?`Your Donation Acknowledgment Letter - ${receipt.reference}`:`Your Donation Receipt - ${receipt.reference}`;
-    const plain=`Dear ${receipt.donor_name},\n\nThank you for supporting Digital Kids Foundation Inc. Please find your ${receipt.document_type==='acknowledgment_letter'?'donation acknowledgment letter':'donation receipt'} attached as a PDF.\n\nReceipt reference: ${receipt.reference}\nDonation date: ${dateFormat(receipt.donation_date)}\n\nWith gratitude,\nDigital Kids Foundation Inc.\nhelp@digitalkidsfoundation.org`;
-    const html=`<div style="font:16px/1.6 Arial,sans-serif;color:#163A2F;max-width:620px;margin:auto"><h2 style="color:#103B2F">Digital Kids Foundation</h2><p>Dear ${htmlEscape(receipt.donor_name)},</p><p>Thank you for supporting our mission of digital access for children. Your donation acknowledgment is attached as a PDF.</p><p><b>Receipt reference:</b> ${htmlEscape(receipt.reference)}<br><b>Date received:</b> ${htmlEscape(dateFormat(receipt.donation_date))}</p><p>With appreciation,<br><b>Digital Kids Foundation Inc.</b></p><p><a href="https://digitalkidsfoundation.org/">digitalkidsfoundation.org</a></p></div>`;
+    const plain=`Dear ${receipt.donor_name},\n\nThank you for supporting Digital Kids Foundation Inc. Please find your ${receipt.document_type==='acknowledgment_letter'?'donation acknowledgment letter':'donation receipt'} attached as a PDF.\n\nReceipt reference: ${receipt.reference}\nDonation date: ${dateFormat(receipt.donation_date)}\nVerify this document: ${verifyUrl(receipt)}\n\nWith gratitude,\nDigital Kids Foundation Inc.\nhelp@digitalkidsfoundation.org`;
+    const html=`<div style="font:16px/1.6 Arial,sans-serif;color:#163A2F;max-width:620px;margin:auto"><h2 style="color:#103B2F">Digital Kids Foundation</h2><p>Dear ${htmlEscape(receipt.donor_name)},</p><p>Thank you for supporting our mission of digital access for children. Your donation acknowledgment is attached as a PDF.</p><p><b>Receipt reference:</b> ${htmlEscape(receipt.reference)}<br><b>Date received:</b> ${htmlEscape(dateFormat(receipt.donation_date))}</p><p><b>Verify this document:</b> <a href="${htmlEscape(verifyUrl(receipt))}">Verify on the DKF website</a>. The verification page also allows you to check whether the PDF file has been altered.</p><p>With appreciation,<br><b>Digital Kids Foundation Inc.</b></p><p><a href="https://digitalkidsfoundation.org/">digitalkidsfoundation.org</a></p></div>`;
     const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':`dkf-receipt/${receipt.id}`},body:JSON.stringify({from,to:[receipt.donor_email],subject,text:plain,html,attachments:[{filename:`${receipt.reference}.pdf`,content:pdf.toString('base64')}] }),signal:AbortSignal.timeout(20000)});
     const responseBody=await response.json().catch(()=>({}));
     if(!response.ok || !responseBody.id)throw Error(`Resend did not confirm acceptance: HTTP ${response.status}`);
     await pool.query(`UPDATE dkf_donor_receipts SET status='sent',sent_at=NOW(),resend_email_id=$2,updated_at=NOW() WHERE id=$1`,[receipt.id,responseBody.id]);
-    res.json({ok:true,reference:receipt.reference,recipient:receipt.donor_email,email_id:responseBody.id,status:'sent'});
+    await pool.query('INSERT INTO dkf_receipt_audit(receipt_id,event,actor,detail) VALUES($1,$2,$3,$4)',[receipt.id,'issued',receipt.approved_by||'admin',responseBody.id]).catch(e=>console.error('Receipt audit log error:',e.message));
+    res.json({ok:true,reference:receipt.reference,recipient:receipt.donor_email,email_id:responseBody.id,status:'sent',verify_url:verifyUrl(receipt)});
   }catch(e){
     console.error('DKF donor receipt send requires review:',e);
     if(receipt){await pool.query(`UPDATE dkf_donor_receipts SET status='needs_review',last_error=$2,updated_at=NOW() WHERE id=$1 AND status='sending'`,[receipt.id,String(e.message).slice(0,250)]).catch(()=>{});}
     res.status(502).json({error:'Email sending could not be confirmed. Do NOT send again automatically; check the Resend dashboard and receipt status to avoid duplicates.',status:'needs_review'});
   }
 });
-module.exports={router,ensureSchema,validate,receiptPdf};
+// An already-issued receipt is never deleted or altered. Revocation invalidates its public verification.
+router.post(api+'/:id/revoke',async(req,res)=>{
+  const reason=safe(req.body?.reason,500);
+  const reference=safe(req.body?.reference,40);
+  if(reason.length<10 || !/^DKF-\d{4}-\d{6,}$/.test(reference))return res.status(400).json({error:'Enter the receipt number and a reason (10 or more characters).'});
+  try {
+    await ensureSchema();
+    const q=await pool.query("UPDATE dkf_donor_receipts SET revoked_at=NOW(),revoked_by=$2,revoked_reason=$3 WHERE id=$1 AND reference=$4 AND status='sent' AND revoked_at IS NULL RETURNING id,reference",[req.params.id,req.dkfAdminEmail||'admin',reason,reference]);
+    if(!q.rowCount)return res.status(409).json({error:'Only a matching, issued, non-revoked document can be revoked.'});
+    await pool.query('INSERT INTO dkf_receipt_audit(receipt_id,event,actor,detail) VALUES($1,$2,$3,$4)',[q.rows[0].id,'revoked',req.dkfAdminEmail||'admin',reason]).catch(e=>console.error('Revocation audit log error:',e.message));
+    res.json({ok:true,reference:q.rows[0].reference,status:'revoked'});
+  }catch(e){console.error('Revoke DKF receipt:',e.message);res.status(500).json({error:'Unable to revoke receipt'});}
+});
+
+// This public endpoint is NOT protected by administrator authentication. Its 128-bit
+// random code is embedded in the QR. The page intentionally shows receipt details
+// (including the name), but never exposes donor email or administrative data.
+const verifyCounters=new Map();
+function rateLimitVerify(req,res,next){
+  const key=req.ip;const now=Date.now();const v=verifyCounters.get(key)||{n:0,start:now};
+  if(now-v.start>60_000){v.n=0;v.start=now;}v.n++;verifyCounters.set(key,v);
+  if(v.n>40)return res.status(429).type('text/plain').send('Too many verification requests. Please try again later.');
+  next();
+}
+setInterval(()=>{const now=Date.now();for(const [k,v] of verifyCounters)if(now-v.start>120_000)verifyCounters.delete(k);},60_000).unref();
+function verificationPage(status,r) {
+  const states={valid:['Verified DKF document','valid','This document was issued by Digital Kids Foundation Inc. Compare the details below with the PDF.'],revoked:['Receipt revoked','revoked','This receipt was revoked. Do not rely on this copy; contact DKF for clarification.'],unverified:['Not verified','invalid','This document could not be verified. It may be a draft, an older document without verification, or an invalid link.']};
+  const [title,state,description]=states[status];
+  const details=status==='valid'?`<dl>
+<dt>Receipt number</dt><dd>${htmlEscape(r.reference)}</dd>
+<dt>Donor / company</dt><dd>${htmlEscape(r.donor_name)}</dd>
+<dt>Document type</dt><dd>${r.document_type==='receipt'?'Donation receipt':'Acknowledgment letter'}</dd>
+<dt>Donation date</dt><dd>${htmlEscape(dateFormat(r.donation_date))}</dd>
+<dt>Donation</dt><dd>${htmlEscape(display[r.donation_type]||r.donation_type)}</dd>
+<dt>Quantity / amount</dt><dd>${htmlEscape(r.donation_type==='monetary'?currency(r.monetary_amount):String(r.quantity))}</dd>
+<dt>Description</dt><dd>${htmlEscape(r.description)}</dd>
+</dl><section class="check"><h2>Check whether the PDF was changed</h2><p>Select the PDF saved on your device. The check runs entirely in your browser; the file is not uploaded to DKF.</p><label for="localPdf">Choose PDF to check</label><input id="localPdf" type="file" accept="application/pdf,.pdf"><p id="pdfCheckResult" role="status">No PDF selected.</p></section>`:'';
+  const sha=status==='valid'?htmlEscape(r.issued_pdf_sha256):'';
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><title>${title} | Digital Kids Foundation</title><style>body{font:16px/1.55 system-ui,sans-serif;background:#f4f8f5;color:#183b34;margin:0;padding:24px}.container{max-width:680px;margin:28px auto;background:white;border:1px solid #d9e5dd;border-radius:16px;overflow:hidden;box-shadow:0 8px 36px #103b2f12}header{background:#103b2f;color:white;padding:26px 32px;border-bottom:5px solid #d4a32c}header h1{font-size:21px;margin:0}main{padding:26px 32px}h2{font-size:18px}.status{font-weight:800;font-size:23px}.valid{color:#186947}.revoked,.invalid{color:#a23e25}dl{display:grid;grid-template-columns:1fr 1.6fr;gap:12px 16px;padding:20px;background:#f4f8f5;border-radius:10px}dt{color:#60726b}dd{margin:0;font-weight:650;overflow-wrap:anywhere}.check{border-top:1px solid #dce6de;margin-top:26px;padding-top:20px}.check input{display:block;margin:10px 0}footer{border-top:1px solid #dce6de;padding:16px 32px;color:#60726b;font-size:13px}a{color:#146f63}@media(max-width:560px){dl{grid-template-columns:1fr}main,header{padding:22px}}</style></head><body><div class="container"><header><h1>Digital Kids Foundation Inc.</h1><div>Official donation document verification</div></header><main><div class="status ${state}">${title}</div><p>${description}</p>${details}<p><strong>Important:</strong> A genuine QR code can be copied onto a modified document. Compare the displayed details, and use the PDF-file check to detect alterations. A verified receipt does not prevent someone from making an identical copy.</p><p>Questions? <a href="mailto:help@digitalkidsfoundation.org">Contact DKF</a>.</p></main><footer>https://digitalkidsfoundation.org &middot; Verification results are provided by DKF.</footer></div>${status==='valid'?`<div id="pdfExpectedSha" data-sha256="${sha}" hidden></div><script src="/verify-donation.js" defer></script>`:''}</body></html>`;
+}
+router.get('/verify-donation/:reference',rateLimitVerify,async(req,res)=>{
+  res.set('Cache-Control','no-store, max-age=0').set('Pragma','no-cache').set('Referrer-Policy','no-referrer')
+    .set('X-Content-Type-Options','nosniff').set('X-Frame-Options','DENY')
+    .set('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+  const reference=String(req.params.reference||''),code=String(req.query.code||'');
+  if(!/^DKF-\d{4}-\d{6,}$/.test(reference)||!/^[a-f0-9]{32}$/.test(code))return res.status(200).type('html').send(verificationPage('unverified'));
+  try{
+    await ensureSchema();
+    const q=await pool.query('SELECT * FROM dkf_donor_receipts WHERE reference=$1 AND verification_code=$2',[reference,code]);
+    const r=q.rows[0];
+    if(!r || r.status!=='sent'||!sealedRowValid(r))return res.status(200).type('html').send(verificationPage('unverified'));
+    return res.type('html').send(verificationPage(r.revoked_at?'revoked':'valid',r));
+  }catch(e){console.error('Public receipt verification:',e.message);return res.status(503).type('text/plain').send('Verification temporarily unavailable. Try again later.');}
+});
+
+module.exports={router,ensureSchema,validate,receiptPdf,sealReceipt,sealedRowValid,canonicalReceipt};

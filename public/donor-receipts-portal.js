@@ -13,6 +13,8 @@
   const today = () => {const d = new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10);};
   const displayDate = value => value ? new Date(value).toLocaleString() : '—';
   const labelStatus = s => ({draft:'Draft',sending:'Sending',sent:'Sent — accepted by provider',needs_review:'Check email delivery'})[s] || s;
+  const statusFor = r => r?.revoked_at ? 'Revoked — invalid' : labelStatus(r?.status);
+  const verificationUrl = r => r?.verification_code && r?.reference ? `https://digitalkidsfoundation.org/verify-donation/${encodeURIComponent(r.reference)}?code=${encodeURIComponent(r.verification_code)}` : null;
   const notify = (message, isError=false) => {const e=$('donorNotice'); e.textContent=message; e.classList.toggle('error',isError);};
   const show = (id,visible) => $(id).classList.toggle('donor-hidden',!visible);
 
@@ -62,6 +64,16 @@
     for(const id of ids) $(id).value=vals[id] == null ? '' : String(vals[id]);
     changeFields(); dirty=false;
   }
+  function updateSecurityTools() {
+    const issued=current?.status==='sent';
+    const url=issued && verificationUrl(current);
+    show('donorSecurityTools',issued);
+    if(url){$('donorVerifyLink').href=url;}
+    show('donorVerifyLink',!!url);
+    show('donorLegacyNotice',issued && !url);
+    $('donorRevoke').disabled=busy || !issued || !!current?.revoked_at;
+    show('donorRevokedNotice',!!current?.revoked_at);
+  }
   function updateControls() {
     const locked=!!current && current.status!=='draft';
     const lockedByRequest=locked || busy;
@@ -71,8 +83,9 @@
     $('donorRefresh').disabled=busy;
     $('donorSend').disabled=busy || locked || !previewed || dirty || !$('donorReceived').checked || !$('donorReviewed').checked;
     for(const id of ids)$(id).disabled=lockedByRequest;
-    $('donorState').textContent = current ? `${current.reference} · ${labelStatus(current.status)}` : 'New draft';
-    $('donorFormHeading').textContent = current ? `${current.reference} · ${labelStatus(current.status)}` : 'Create receipt draft';
+    $('donorState').textContent = current ? `${current.reference} · ${statusFor(current)}` : 'New draft';
+    $('donorFormHeading').textContent = current ? `${current.reference} · ${statusFor(current)}` : 'Create receipt draft';
+    updateSecurityTools();
     if(current?.status==='needs_review')$('donorPdfEmpty').textContent='Delivery acceptance was not confirmed. Contact the administrator to check Resend logs before any manual follow-up. This receipt cannot be resent automatically.';
     else $('donorPdfEmpty').textContent='Save a draft to generate the PDF using the approved Digital Kids Foundation receipt design.';
   }
@@ -119,7 +132,7 @@
     if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='No donor receipts yet.';tr.append(td);target.append(tr);return;}
     for(const r of rows) {
       const tr=document.createElement('tr');
-      const vals=[r.reference,r.donor_name,r.document_type==='receipt'?'Donation receipt':'Acknowledgment letter',labels[r.donation_type]||r.donation_type,labelStatus(r.status),displayDate(r.sent_at)];
+      const vals=[r.reference,r.donor_name,r.document_type==='receipt'?'Donation receipt':'Acknowledgment letter',labels[r.donation_type]||r.donation_type,statusFor(r),displayDate(r.sent_at)];
       for(const v of vals){const td=document.createElement('td');td.textContent=String(v??'');tr.append(td);}
       const td=document.createElement('td');
       const b=document.createElement('button');b.type='button';b.className='secondary';b.textContent='Open';b.addEventListener('click',()=>openReceipt(r.id));td.append(b);
@@ -137,7 +150,7 @@
         const response=await fetch(`${API}/${id}/pdf`,{credentials:'same-origin',cache:'no-store'});
         if(response.ok){previewUrl=URL.createObjectURL(await response.blob());$('donorPdf').src=previewUrl;show('donorPdf',true);show('donorPdfEmpty',false);$('donorPdfLink').href=`${API}/${id}/pdf`;show('donorPdfLink',true);}
       }
-      notify(current.status==='sent'?`${current.reference}: email accepted by Resend, ${current.sent_at ? displayDate(current.sent_at) : ''}. Provider acceptance does not prove inbox delivery.`:`${current.reference} loaded. Review or update this draft as needed.`);
+      notify(current.revoked_at ? `${current.reference}: REVOKED. Its public verification link will show this document as invalid.` : current.status==='sent'?`${current.reference}: email accepted by Resend, ${current.sent_at ? displayDate(current.sent_at) : ''}. Provider acceptance does not prove inbox delivery.`:`${current.reference} loaded. Review or update this draft as needed.`);
     }catch(e){notify(e.message,true);}finally{busy=false;updateControls();}
   }
   function newDraft() {
@@ -169,6 +182,22 @@
       await history().catch(()=>{});
     }finally{busy=false;updateControls();}
   }
+  async function revoke() {
+    if(busy || current?.status!=='sent' || current.revoked_at)return;
+    const reference=current.reference;
+    const reason=prompt(`Revoke ${reference}?\n\nEnter a specific reason (at least 10 characters). This permanently invalidates public verification and cannot be undone here.`);
+    if(reason==null)return;
+    if(reason.trim().length<10){notify('Reason must contain at least 10 characters.',true);return;}
+    if(!confirm(`FINAL CONFIRMATION: Revoke ${reference}?\n\nThis document will be marked invalid at the DKF verification website. The archived PDF and audit history will be retained.`))return;
+    busy=true;updateControls();
+    try{
+      await request(`${API}/${current.id}/revoke`,'POST',{reference,reason:reason.trim()});
+      current=await request(`${API}/${current.id}`);
+      await history();
+      notify(`${reference} revoked. Its public verification page will now show REVOKED. Notify the donor separately if necessary.`);
+    }catch(e){notify(e.message,true);}finally{busy=false;updateControls();}
+  }
+  $('donorRevoke').addEventListener('click',revoke);
   for(const id of ids){$(id).addEventListener('input',()=>{dirty=true;clearPreview();changeFields();updateControls();});}
   $('donorForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;updateControls();try{await saveDraft();}catch(err){notify(err.message,true);}finally{busy=false;updateControls();}});
   $('donorPreview').addEventListener('click',preview);

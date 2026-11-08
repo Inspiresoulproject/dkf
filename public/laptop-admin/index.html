@@ -40,6 +40,13 @@
       <div id="donorPdfEmpty" class="donor-pdf-empty">Save a draft to generate the PDF using the approved Digital Kids Foundation receipt design.</div>
       <iframe id="donorPdf" title="DKF donor receipt PDF preview" class="donor-hidden"></iframe>
       <div class="donor-actions"><a id="donorPdfLink" class="donor-link donor-hidden" target="_blank" rel="noopener" href="#">Open PDF in new tab</a></div>
+      <div id="donorSecurityTools" class="donor-hidden" style="border:1px solid #dce8df;background:#f6faf7;border-radius:12px;padding:14px;margin:12px 0">
+        <strong>Receipt authenticity &amp; fraud prevention</strong>
+        <p class="donor-help">Issued PDFs contain a verification QR code. Compare document fields at the official DKF link and check the PDF hash there.</p>
+        <div class="donor-actions"><a id="donorVerifyLink" class="donor-link donor-hidden" href="#" target="_blank" rel="noopener noreferrer">Verify issued document</a><button id="donorRevoke" type="button" class="secondary">Revoke receipt</button></div>
+        <p id="donorLegacyNotice" class="donor-help donor-hidden">Legacy issued document: no QR code was included when it was sent. This version cannot retroactively authenticate the previously emailed PDF.</p>
+        <p id="donorRevokedNotice" class="donor-help donor-hidden" style="color:#963d24;font-weight:700">This document has been revoked and is no longer valid.</p>
+      </div>
       <div class="donor-approval">
         <label><input id="donorReceived" type="checkbox"> I confirm DKF actually received and documented this donation.</label>
         <label><input id="donorReviewed" type="checkbox"> I reviewed the PDF, donor email, donation date, type and quantity or amount.</label>
@@ -54,4 +61,4 @@
   </article>
 </section>
 <section id="administration" class="page"><div class="intro"><div><h2>Administration</h2><p>Identity and access details.</p></div></div><article class="panel"><h3>Signed-in administrator</h3><p id="adminEmail">Checking session…</p><p class="muted">Authentication is managed by Microsoft Entra ID and Cloudflare Access. Administrative API calls are validated by the DKF server.</p><a class="button-link" href="/cdn-cgi/access/logout">Sign out of Cloudflare Access</a><p class="muted">Signing out of Cloudflare may not sign you out of Microsoft 365.</p></article></section>
-</main></div></div><script src="/laptop-admin-portal.js" defer></script><script src="/donor-receipts-portal.js?v=20261108-send-fix-1" defer></script></body></html>
+</main></div></div><script src="/laptop-admin-portal.js" defer></script><script src="/donor-receipts-portal.js?v=20261108-verify-v1" defer></script></body></html>

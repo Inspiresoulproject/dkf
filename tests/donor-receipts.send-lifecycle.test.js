@@ -11,7 +11,7 @@ const receipt={
   id:2, reference:'DKF-2026-000002',donor_name:'Staging Test Donor',donor_email:'stage@example.test',
   document_type:'receipt',donation_type:'laptop',donation_date:'2026-11-07',quantity:1,
   description:'One used laptop',consideration_type:'none',consideration_description:null,
-  consideration_value:null,monetary_amount:null,status:'draft',updated_at:new Date('2026-11-07T21:42:31.123Z')
+  consideration_value:null,monetary_amount:null,verification_code:'0123456789abcdef0123456789abcdef',status:'draft',updated_at:new Date('2026-11-07T21:42:31.123Z')
 };
 let previewRecorded=false,sendCalls=0;
 class FakePool{
@@ -30,7 +30,8 @@ class FakePool{
       if(!previewRecorded||receipt.status!=='draft')return {rows:[],rowCount:0};
       receipt.status='sending';receipt.approved_by=args[1];return {rows:[{...receipt}],rowCount:1};
     }
-    if(sql.includes('SET issued_pdf='))return {rows:[],rowCount:1};
+    if(sql.includes('SET issued_pdf=')){receipt.issued_pdf=args[1];receipt.verification_seal=args[2];receipt.issued_pdf_sha256=args[3];return {rows:[],rowCount:1};}
+    if(sql.includes('INSERT INTO dkf_receipt_audit'))return {rows:[],rowCount:1};
     if(sql.includes("SET status='sent'")){
       assert.equal(receipt.status,'sending');
       receipt.status='sent';receipt.sent_at=new Date();receipt.resend_email_id=args[1];return {rows:[],rowCount:1};
@@ -54,6 +55,7 @@ Module._load=function(name,parent,main){
   if(name==='express')return {Router:()=>fakeRouter};
   if(name==='pg')return {Pool:FakePool};
   if(name==='pdfkit')return FakePDF;
+  if(name==='qrcode')return {toBuffer:async()=>Buffer.from('stub-qr')};
   if(name==='./dkf-access-auth')return {verifyAdmin:(req,res,next)=>next()};
   return oldLoad.call(this,name,parent,main);
 };
@@ -63,8 +65,8 @@ function response(){return {
   status(n){this.statusCode=n;return this;},set(k,v){this.headers[k]=v;return this;},
   json(x){this.data=x;return this;},send(x){this.data=x;return this;}
 };}
-const prevKey=process.env.RESEND_API_KEY,prevMail=process.env.MAIL_FROM,prevFetch=global.fetch;
-process.env.RESEND_API_KEY='test-only-no-real-send';process.env.MAIL_FROM='test@digitalkidsfoundation.org';
+const prevKey=process.env.RESEND_API_KEY,prevMail=process.env.MAIL_FROM,prevSigning=process.env.DKF_RECEIPT_SIGNING_KEY,prevFetch=global.fetch;
+process.env.RESEND_API_KEY='test-only-no-real-send';process.env.MAIL_FROM='test@digitalkidsfoundation.org';process.env.DKF_RECEIPT_SIGNING_KEY='11'.repeat(32);
 global.fetch=async()=>{sendCalls++;return {ok:true,status:200,json:async()=>({id:'eml-test-123'})};};
 (async()=>{
   // A send before the server records a preview must not be possible.
@@ -88,4 +90,5 @@ global.fetch=async()=>{sendCalls++;return {ok:true,status:200,json:async()=>({id
   global.fetch=prevFetch;
   if(prevKey===undefined)delete process.env.RESEND_API_KEY;else process.env.RESEND_API_KEY=prevKey;
   if(prevMail===undefined)delete process.env.MAIL_FROM;else process.env.MAIL_FROM=prevMail;
+  if(prevSigning===undefined)delete process.env.DKF_RECEIPT_SIGNING_KEY;else process.env.DKF_RECEIPT_SIGNING_KEY=prevSigning;
 });
