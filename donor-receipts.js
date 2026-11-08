@@ -178,15 +178,23 @@ router.post(api,async(req,res)=>{try{await ensureSchema();const d=validate(req.b
 router.get(api+'/:id',async(req,res)=>{try{await ensureSchema();const r=await pool.query(`SELECT ${exposed} FROM dkf_donor_receipts WHERE id=$1`,[req.params.id]);if(!r.rows.length)return res.status(404).json({error:'Not found'});res.set('Cache-Control','no-store').json(r.rows[0]);}catch(e){res.status(500).json({error:'Unable to retrieve receipt'});}});
 router.patch(api+'/:id',async(req,res)=>{try{await ensureSchema();const d=validate(req.body);const q=await pool.query(`UPDATE dkf_donor_receipts SET ${fields.map((k,i)=>`${k}=$${i+1}`).join(',')},updated_at=NOW() WHERE id=$12 AND status='draft' RETURNING ${exposed}`,[...fields.map(k=>d[k]),req.params.id]);if(!q.rows.length)return res.status(409).json({error:'Only drafts may be edited'});res.json(q.rows[0]);}catch(e){res.status(e.status||500).json({error:e.status?e.message:'Unable to update draft'});}});
 router.get(api+'/:id/pdf',async(req,res)=>{try{await ensureSchema();const r=await pool.query(`SELECT ${exposed},issued_pdf FROM dkf_donor_receipts WHERE id=$1`,[req.params.id]);if(!r.rows.length)return res.status(404).json({error:'Not found'});if(r.rows[0].status!=='draft'&&r.rows[0].status!=='sent')return res.status(409).json({error:'Delivery status needs review'});const b=r.rows[0].status==='sent' && r.rows[0].issued_pdf ? r.rows[0].issued_pdf : await receiptPdf(r.rows[0],r.rows[0].status!=='sent');
-if(r.rows[0].status==='draft')await pool.query("UPDATE dkf_donor_receipts SET last_previewed_at=NOW() WHERE id=$1 AND status='draft' AND updated_at=$2",[r.rows[0].id,r.rows[0].updated_at]);
+if(r.rows[0].status==='draft'){
+  // PostgreSQL stores microseconds, while node-postgres serializes JS Dates to milliseconds.
+  // Compare at the precision actually transported to the browser.
+  const marked=await pool.query(
+    "UPDATE dkf_donor_receipts SET last_previewed_at=NOW() WHERE id=$1 AND status='draft' AND date_trunc('milliseconds',updated_at)=$2::timestamptz RETURNING id",
+    [r.rows[0].id,r.rows[0].updated_at]
+  );
+  if(!marked.rowCount)return res.status(409).json({error:'The draft changed while previewing. Reload it and generate a fresh PDF.'});
+}
 res.set('Cache-Control','private, no-store').set('X-Frame-Options','SAMEORIGIN').set('Content-Security-Policy',"default-src 'self' blob: data:; object-src blob:; frame-ancestors 'self'").set('Content-Type','application/pdf').set('Content-Disposition',`inline; filename="${r.rows[0].reference}.pdf"`).send(b);}catch(e){console.error('PDF error',e);res.status(500).json({error:'Unable to render PDF'});}});
 router.post(api+'/:id/send',async(req,res)=>{
   // Explicit two-step operation: preview first, then check factual confirmations and send.
   if(req.body?.confirmedReceived!==true||req.body?.confirmedPreview!==true||!req.body?.expectedUpdatedAt)return res.status(400).json({error:'Review the current PDF and confirm the donation was received before sending'});
   let receipt;
   try{
-    await ensureSchema(); const q=await pool.query(`UPDATE dkf_donor_receipts SET status='sending',approved_by=$2,updated_at=NOW() WHERE id=$1 AND status='draft' AND updated_at=$3::timestamptz AND last_previewed_at >= updated_at RETURNING ${exposed}`,[req.params.id,req.dkfAdminEmail||'admin',req.body.expectedUpdatedAt]);
-    if(!q.rows.length)return res.status(409).json({error:'Receipt is not an unsent draft. Check history before trying again.'});
+    await ensureSchema(); const q=await pool.query(`UPDATE dkf_donor_receipts SET status='sending',approved_by=$2,updated_at=NOW() WHERE id=$1 AND status='draft' AND date_trunc('milliseconds',updated_at)=$3::timestamptz AND last_previewed_at >= updated_at RETURNING ${exposed}`,[req.params.id,req.dkfAdminEmail||'admin',req.body.expectedUpdatedAt]);
+    if(!q.rows.length)return res.status(409).json({error:'Receipt was not sent: it is not an eligible, freshly previewed draft. Reopen the receipt, generate the PDF again, and reconfirm. If delivery was previously attempted, verify it in Resend first.'});
     receipt=q.rows[0];
     const pdf=await receiptPdf(receipt,false);
     await pool.query("UPDATE dkf_donor_receipts SET issued_pdf=$2 WHERE id=$1 AND status='sending'",[receipt.id,pdf]);

@@ -148,13 +148,26 @@
     if(!current || current.status!=='draft' || !previewed || dirty || !$('donorReceived').checked || !$('donorReviewed').checked || busy)return;
     if(!confirm(`SEND FINAL PDF ${current.reference} to ${current.donor_email}?\n\nThis email cannot be recalled. Confirm the donation was received and the PDF is correct.`)) return;
     busy=true;updateControls();
+    let result;
     try{
-      const result=await request(`${API}/${current.id}/send`,'POST',{confirmedReceived:true,confirmedPreview:true,expectedUpdatedAt:current.updated_at});
-      current=await request(`${API}/${current.id}`);
-      clearPreview();updateControls();await history();
-      notify(`${result.reference}: email accepted by Resend for ${result.recipient}. Verify delivery in Resend if necessary.`);
-    }catch(e){notify(e.message,true);if(current)current=await request(`${API}/${current.id}`).catch(()=>current);updateControls();await history().catch(()=>{});}
-    finally{busy=false;updateControls();}
+      result=await request(`${API}/${current.id}/send`,'POST',{confirmedReceived:true,confirmedPreview:true,expectedUpdatedAt:current.updated_at});
+      // The API has committed the sent status before replying. Lock this record even if
+      // a follow-up refresh fails, so a transient UI error cannot invite duplicate sends.
+      current={...current,status:'sent'};
+      clearPreview();updateControls();
+      try{
+        current=await request(`${API}/${current.id}`);
+        await history();
+        notify(`${result.reference}: Resend accepted the email to ${result.recipient}. History updated to Sent. Check Resend for final delivery.`);
+      }catch(refreshError){
+        notify(`${result.reference}: Resend accepted the email, but history could not refresh (${refreshError.message}). Refresh the browser to verify. Do NOT send again.`,true);
+      }
+    }catch(e){
+      notify(`Email was NOT confirmed: ${e.message}`,true);
+      if(current)current=await request(`${API}/${current.id}`).catch(()=>current);
+      updateControls();
+      await history().catch(()=>{});
+    }finally{busy=false;updateControls();}
   }
   for(const id of ids){$(id).addEventListener('input',()=>{dirty=true;clearPreview();changeFields();updateControls();});}
   $('donorForm').addEventListener('submit',async e=>{e.preventDefault();if(busy)return;busy=true;updateControls();try{await saveDraft();}catch(err){notify(err.message,true);}finally{busy=false;updateControls();}});
