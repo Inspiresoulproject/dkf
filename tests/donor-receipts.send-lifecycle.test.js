@@ -10,7 +10,7 @@ const routes={get:new Map(),post:new Map()};
 const receipt={
   id:2, reference:'DKF-2026-000002',donor_name:'Staging Test Donor',donor_email:'stage@example.test',
   document_type:'receipt',donation_type:'laptop',donation_date:'2026-11-07',quantity:1,
-  description:'One used laptop',consideration_type:'none',consideration_description:null,
+  description:'One used laptop',document_format_version:1,consideration_type:'none',consideration_description:null,
   consideration_value:null,monetary_amount:null,verification_code:'0123456789abcdef0123456789abcdef',status:'draft',updated_at:new Date('2026-11-07T21:42:31.123Z')
 };
 let previewRecorded=false,sendCalls=0;
@@ -28,7 +28,7 @@ class FakePool{
       assert.match(sql,/last_previewed_at >= updated_at/);
       assert.equal(args[2],receipt.updated_at.toISOString());
       if(!previewRecorded||receipt.status!=='draft')return {rows:[],rowCount:0};
-      receipt.status='sending';receipt.approved_by=args[1];return {rows:[{...receipt}],rowCount:1};
+      receipt.status='sending';receipt.approved_by=args[1];receipt.document_format_version=2;return {rows:[{...receipt}],rowCount:1};
     }
     if(sql.includes('SET issued_pdf=')){receipt.issued_pdf=args[1];receipt.verification_seal=args[2];receipt.issued_pdf_sha256=args[3];return {rows:[],rowCount:1};}
     if(sql.includes('INSERT INTO dkf_receipt_audit'))return {rows:[],rowCount:1};
@@ -41,7 +41,7 @@ class FakePool{
 }
 class FakePDF extends EventEmitter{
   constructor(){super();this.y=120;}
-  rect(){return this;} roundedRect(){return this;} fill(){return this;}
+  rect(){return this;} roundedRect(){return this;} ellipse(){return this;} lineWidth(){return this;} fill(){return this;}
   font(){return this;} fontSize(){return this;} fillColor(){return this;}
   text(){return this;} image(){return this;} moveTo(){return this;}
   lineTo(){return this;} strokeColor(){return this;} stroke(){return this;}
@@ -81,7 +81,7 @@ global.fetch=async()=>{sendCalls++;return {ok:true,status:200,json:async()=>({id
   assert.match(pdfReply.headers['Content-Type'],/pdf/);
   // Previewed draft sends exactly once, updates status, records Resend acceptance.
   const accepted=response();await send({params:{id:2},body:data,dkfAdminEmail:'admin@example.test'},accepted);
-  assert.equal(accepted.data.status,'sent');assert.equal(receipt.status,'sent');assert.equal(receipt.resend_email_id,'eml-test-123');assert.equal(sendCalls,1);
+  assert.equal(accepted.data.status,'sent');assert.equal(receipt.status,'sent');assert.equal(receipt.document_format_version,2);assert.equal(receipt.resend_email_id,'eml-test-123');assert.equal(sendCalls,1);
   // Duplicate clicks are blocked even if the client tries to send again.
   const duplicate=response();await send({params:{id:2},body:data,dkfAdminEmail:'admin@example.test'},duplicate);
   assert.equal(duplicate.statusCode,409);assert.equal(sendCalls,1);

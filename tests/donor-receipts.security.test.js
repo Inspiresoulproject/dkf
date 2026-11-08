@@ -9,7 +9,7 @@ const originalLoad=Module._load;
 const originalKey=process.env.DKF_RECEIPT_SIGNING_KEY;
 process.env.DKF_RECEIPT_SIGNING_KEY='ab'.repeat(32);
 const row={
-  id:42,reference:'DKF-2026-000042',verification_code:'a1b2c3d4e5f60123456789abcdef0123',
+  id:42,document_format_version:2,reference:'DKF-2026-000042',verification_code:'a1b2c3d4e5f60123456789abcdef0123',
   donor_name:'Sample <Business>',donor_email:'private@example.test',document_type:'receipt',
   donation_type:'laptop',quantity:2,donation_date:'2026-11-07',description:'2 Dell laptops',
   consideration_type:'none',consideration_description:null,consideration_value:null,monetary_amount:null,
@@ -19,7 +19,7 @@ const row={
 let qrUrls=[];
 class StubPDF extends EventEmitter {
   constructor(){super();this.y=100;}
-  rect(){return this;}roundedRect(){return this;}fill(){return this;}
+  rect(){return this;}roundedRect(){return this;}ellipse(){return this;}lineWidth(){return this;}fill(){return this;}
   font(){return this;}fontSize(){return this;}fillColor(){return this;}
   text(){return this;}image(){return this;}moveTo(){return this;}
   lineTo(){return this;}strokeColor(){return this;}stroke(){return this;}
@@ -59,6 +59,9 @@ try{mod=require('../donor-receipts');}finally{Module._load=originalLoad;}
 function res(){return {statusCode:200,headers:{},body:null,status(code){this.statusCode=code;return this;},type(t){this.headers['content-type']=t;return this;},set(k,v){this.headers[k]=v;return this;},send(body){this.body=body;return this;},json(body){this.body=body;return this;}};}
 (async()=>{
   assert.equal(mod.sealReceipt(row).length,64);
+  assert.notEqual(mod.sealReceipt({...row,document_format_version:1}),mod.sealReceipt(row),'v2 signing is distinct from historical v1');
+  assert.equal(mod.visibleSealId(row),mod.sealReceipt(row).slice(0,16).toUpperCase());
+  assert.equal(mod.visibleSealId(row,true),'NOT ISSUED');
   row.verification_seal=mod.sealReceipt(row);
   row.issued_pdf_sha256=crypto.createHash('sha256').update(row.issued_pdf).digest('hex');
   assert.equal(mod.sealedRowValid(row),true);
@@ -73,6 +76,8 @@ function res(){return {statusCode:200,headers:{},body:null,status(code){this.sta
   const req={params:{reference:row.reference},query:{code:row.verification_code},ip:'127.0.0.1'};
   let out=res();await handler(req,out);
   assert.match(out.body,/Verified DKF document/);
+  assert.match(out.body,/Document seal ID/);
+  assert.match(out.body,new RegExp(mod.visibleSealId(row)));
   assert.match(out.body,/Sample &lt;Business&gt;/,'public output escapes HTML');
   assert.doesNotMatch(out.body,/private@example.test/,'must not leak donor email');
   assert.match(out.body,/Choose PDF to check/);
