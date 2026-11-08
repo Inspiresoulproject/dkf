@@ -15,7 +15,7 @@ app.use((req, res, next) => {
     'X-Frame-Options':'DENY',
     'Permissions-Policy':'camera=(), microphone=(), geolocation=()',
     'Cross-Origin-Opener-Policy':'same-origin-allow-popups',
-    'Content-Security-Policy':"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://www.paypal.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.paypalobjects.com https://www.paypal.com; frame-src https://challenges.cloudflare.com https://www.paypal.com https://www.sandbox.paypal.com; connect-src 'self' https://challenges.cloudflare.com https://www.paypal.com https://www.paypalobjects.com"
+    'Content-Security-Policy':"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://www.paypal.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://www.paypalobjects.com https://www.paypal.com; frame-src 'self' blob: https://challenges.cloudflare.com https://www.paypal.com https://www.sandbox.paypal.com; connect-src 'self' https://challenges.cloudflare.com https://www.paypal.com https://www.paypalobjects.com"
   });
   if (req.secure || req.headers['x-forwarded-proto'] === 'https') res.set('Strict-Transport-Security','max-age=31536000');
   next();
@@ -219,7 +219,7 @@ app.get('/mobile-turnstile', (req, res) => {
     'Content-Security-Policy',
     "default-src 'none'; " +
     "script-src 'unsafe-inline' https://challenges.cloudflare.com; " +
-    "frame-src https://challenges.cloudflare.com; " +
+    "frame-src 'self' blob: https://challenges.cloudflare.com; " +
     "connect-src https://challenges.cloudflare.com; " +
     "style-src 'unsafe-inline'; " +
     "img-src data: https://challenges.cloudflare.com"
@@ -291,6 +291,12 @@ app.get('/mobile-turnstile', (req, res) => {
 const laptopSystem = require('./laptop-system');
 app.use(laptopSystem.router);
 if (process.env.DATABASE_URL) laptopSystem.init().catch(err => console.error('Laptop schema initialization failed:', err.message));
+
+// DKF donor acknowledgments: authenticated draft, preview and explicit send workflow.
+const donorReceipts = require('./donor-receipts');
+app.use(donorReceipts.router);
+if (process.env.DATABASE_URL) donorReceipts.ensureSchema().catch(err => console.error('Donor receipt schema initialization failed:', err.message));
+
 
 // SEO cleanup: redirect only genuine replacements, not unrelated pages.
 // Legacy WordPress homepage: consolidate its search signals with the current homepage.

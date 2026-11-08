@@ -6,3 +6,27 @@
 .nav{align-items:center;gap:14px}
 .nav-icon{width:21px;height:21px;flex:0 0 21px;display:block;opacity:.95}
 .nav span{min-width:0}
+
+/* Donor Receipts: embedded in the existing secure DKF administration UI */
+.donor-grid{display:grid;grid-template-columns:minmax(300px,1fr) minmax(390px,1.18fr);gap:20px;align-items:start}
+.donor-grid .panel{min-width:0}
+.donor-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.donor-pair label{min-width:0}
+.donor-hidden{display:none!important}
+.donor-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.donor-help{color:var(--muted);font-size:13px;line-height:1.6;margin:13px 0}
+.donor-topline{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:15px}
+.donor-topline h3{margin:0}
+.donor-preview-panel iframe{display:block;width:100%;height:600px;border:1px solid var(--line);border-radius:10px;background:white}
+.donor-pdf-empty{border:1px dashed #b5cbbf;background:#f8fbf9;border-radius:10px;padding:35px 20px;text-align:center;color:var(--muted);min-height:195px;display:flex;align-items:center;justify-content:center}
+.donor-approval{margin:16px 0;padding:16px;background:#f4f8f4;border-radius:10px}
+.donor-approval label{display:flex;align-items:start;gap:9px;font-size:13px;font-weight:500;line-height:1.5;margin:0 0 11px}
+.donor-approval label:last-child{margin-bottom:0}
+.donor-approval input{width:auto;flex:0 0 auto;margin:3px 0 0}
+.donor-history-panel{margin-top:22px}
+.donor-link{color:var(--green2);font-size:13px;font-weight:700}
+#donorSend{background:#bd912d;color:#17352b}
+#donorSend:disabled,.donor-grid button:disabled{opacity:.48;cursor:not-allowed}
+#donorNotice{margin-bottom:20px}
+@media(max-width:1150px){.donor-grid{grid-template-columns:1fr}.donor-preview-panel iframe{height:540px}}
+@media(max-width:550px){.donor-pair{grid-template-columns:1fr}.donor-preview-panel iframe{height:440px}}
