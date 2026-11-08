@@ -22,7 +22,7 @@
   display:flex;align-items:center;gap:9px;
   margin:0 0 19px;
   color:#225a49;
-  font-family:Inter,Arial,sans-serif;
+  font-family:'Lato',Arial,sans-serif;
   font-weight:800;
   font-size:clamp(.7rem,.9vw,.79rem);
   letter-spacing:.12em;
@@ -31,7 +31,7 @@
 .dkf-brooklyn-teaser .dkf-brooklyn-label svg { flex:none; color:#d8aa2e; }
 .dkf-brooklyn-teaser h2 {
   margin:0 0 19px;
-  font-family:'DM Serif Display',Georgia,serif;
+  font-family:'Playfair Display',Georgia,serif;
   font-size:clamp(2.2rem,3.4vw,4.1rem);
   font-weight:400;
   line-height:1.075;
@@ -57,7 +57,7 @@
   background:#103b2f;
   color:#fff;
   text-decoration:none;
-  font-family:Inter,Arial,sans-serif;
+  font-family:'Lato',Arial,sans-serif;
   font-size:.94rem;
   font-weight:800;
   transition:transform .18s ease,background .18s ease;

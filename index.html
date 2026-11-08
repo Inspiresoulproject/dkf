@@ -17,7 +17,7 @@
 <meta content="Support Digital Kids Foundation’s mission to refurbish donated laptops, expand digital literacy, and create technology opportunities for underserved children." name="description"/>
 <link href="https://fonts.googleapis.com" rel="preconnect"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&amp;family=Lato:wght@400;700;900&amp;display=swap" rel="stylesheet"/>
 <style>
 /* ══ TOKENS ════════════════════════════════════ */
 :root {
@@ -48,25 +48,25 @@
 /* ══ RESET ══════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;font-size:16px}
-body{font-family:'Inter',sans-serif;background:var(--white);color:var(--ink);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body{font-family:'Lato',sans-serif;background:var(--white);color:var(--ink);line-height:1.7;overflow-x:hidden;-webkit-font-smoothing:antialiased}
 img{display:block;max-width:100%}
 a{text-decoration:none;color:inherit}
 button{cursor:pointer;font-family:inherit;border:none;background:none}
 ul{list-style:none}
-input,select,textarea{font-family:'Inter',sans-serif}
+input,select,textarea{font-family:'Lato',sans-serif}
 
 /* ══ PAGE SWITCHING ══════════════════════════════ */
 .page{display:none}
 .page.active{display:block}
 
 /* ══ TYPE ════════════════════════════════════════ */
-h1,h2,h3{font-family:'DM Serif Display',serif;font-weight:400}
+h1,h2,h3{font-family:'Playfair Display',serif;font-weight:400}
 h1{font-size:clamp(2.4rem,6vw,4rem);line-height:1.06;letter-spacing:-1px}
 h2{font-size:clamp(1.8rem,4vw,2.8rem);line-height:1.1;letter-spacing:-.5px}
 h3{font-size:clamp(1.2rem,2.5vw,1.5rem);line-height:1.2}
-h4{font-family:'Inter',sans-serif;font-weight:700;font-size:1rem}
+h4{font-family:'Lato',sans-serif;font-weight:700;font-size:1rem}
 p{color:var(--ink-mid)}
-.eyebrow{font-family:'Inter',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);display:inline-block;margin-bottom:.9rem}
+.eyebrow{font-family:'Lato',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--teal);display:inline-block;margin-bottom:.9rem}
 .eyebrow-amber{color:var(--amber)}
 em.teal{font-style:italic;color:var(--amber)}
 .t-teal{color:var(--teal)}
@@ -83,7 +83,7 @@ section{padding:90px 0}
 .mx{margin-left:auto;margin-right:auto}
 
 /* ══ BUTTONS ══════════════════════════════════════ */
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.82rem 2rem;border-radius:50px;font-family:'Inter',sans-serif;font-weight:700;font-size:.92rem;border:2px solid transparent;transition:all var(--ease);line-height:1;white-space:nowrap;cursor:pointer}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.82rem 2rem;border-radius:50px;font-family:'Lato',sans-serif;font-weight:700;font-size:.92rem;border:2px solid transparent;transition:all var(--ease);line-height:1;white-space:nowrap;cursor:pointer}
 .btn-teal{background:var(--teal);color:#fff;border-color:var(--teal)}
 .btn-teal:hover{background:var(--teal-dk);border-color:var(--teal-dk);transform:translateY(-2px);box-shadow:0 6px 20px rgba(27,163,156,.35)}
 .btn-amber{background:var(--amber);color:#fff;border-color:var(--amber)}
@@ -212,7 +212,7 @@ section{padding:90px 0}
 .section-dark .btn-ot{border-color:rgba(255,255,255,.5);color:#fff}
 .section-dark .btn-ot:hover{background:#fff;color:var(--teal-deep)}
 .ps{text-align:center;padding:0 1rem;position:relative;z-index:1}
-.ps-num{width:54px;height:54px;border-radius:50%;background:var(--teal);color:#fff;font-family:'DM Serif Display',serif;font-size:1.3rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1.1rem;box-shadow:0 4px 16px rgba(27,163,156,.3)}
+.ps-num{width:54px;height:54px;border-radius:50%;background:var(--teal);color:#fff;font-family:'Playfair Display',serif;font-size:1.3rem;display:flex;align-items:center;justify-content:center;margin:0 auto 1.1rem;box-shadow:0 4px 16px rgba(27,163,156,.3)}
 .ps h4{margin-bottom:.35rem;font-size:.93rem;color:var(--ink)}
 .ps p{font-size:.83rem;line-height:1.6}
 
@@ -225,13 +225,20 @@ section{padding:90px 0}
 .pill{display:inline-flex;align-items:center;background:var(--teal-lt);color:var(--teal-deep);padding:.3rem .85rem;border-radius:50px;font-size:.75rem;font-weight:700;letter-spacing:.04em}
 .pill.amb{background:var(--amber-lt);color:var(--amber-dk)}
 
-/* ══ TESTMONIALS ══════════════════════════════════ */
-.tcard{background:#fff;border-radius:var(--r-lg);padding:1.8rem;border-left:4px solid var(--teal);box-shadow:var(--sh-sm)}
-.tcard blockquote{font-family:'DM Serif Display',serif;font-style:italic;color:var(--ink);font-size:.93rem;line-height:1.75;margin-bottom:1.1rem}
-.tcard-auth{display:flex;align-items:center;gap:.75rem}
-.tcard-av{width:40px;height:40px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.95rem;flex-shrink:0}
-.tcard-name{font-weight:700;font-size:.86rem;color:var(--ink)}
-.tcard-role{font-size:.76rem;color:var(--ink-lt)}
+/* ══ STORIES / TESTIMONIALS ═════════════════════════ */
+.stories-section{background:linear-gradient(180deg,#f6fbfa 0%,#eef7f5 100%)}
+.stories-section .sh{display:flex;flex-direction:column;gap:.55rem;margin-bottom:2.5rem}
+.stories-section .sh h2{color:var(--ink);max-width:800px}
+.stories-section .sh .muted-kicker{color:var(--ink-lt);font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,4.2rem);line-height:1;opacity:.12;display:block;margin-bottom:-.35rem;letter-spacing:-.04em}
+.stories-section .g3{align-items:stretch}
+.tcard{background:#fff;border-radius:var(--r-lg);padding:1.9rem;border:1px solid #d6e7e4;border-left:5px solid var(--teal);box-shadow:0 10px 28px rgba(13,43,40,.07);height:100%}
+.tcard blockquote{font-family:'Playfair Display',serif;font-style:italic;color:var(--ink);font-size:1.03rem;line-height:1.8;margin-bottom:1.35rem}
+.tcard-auth{display:flex;align-items:center;gap:.85rem;margin-top:auto}
+.tcard-av{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--teal) 0%,#5fb5b0 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.15rem;flex-shrink:0;box-shadow:0 8px 18px rgba(27,163,156,.24)}
+.tcard-name{font-weight:900;font-size:.98rem;color:var(--ink)}
+.tcard-role{font-size:.82rem;color:var(--ink-lt)}
+.stories-section .t-teal{color:var(--teal-dk)}
+@media(max-width:720px){.stories-section .sh .muted-kicker{font-size:2.4rem;margin-bottom:0}.tcard{padding:1.45rem}.tcard blockquote{font-size:.98rem}}
 
 /* ══ SERVE CARDS ══════════════════════════════════ */
 .svc{border-left:4px solid var(--teal);padding-left:1.4rem}
@@ -260,7 +267,7 @@ section{padding:90px 0}
 /* ══ FAQ ══════════════════════════════════════════ */
 .faq-list{display:flex;flex-direction:column;gap:.75rem}
 .faq-item{background:#fff;border:1.5px solid var(--border);border-radius:var(--r-md);overflow:hidden}
-.faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;padding:1.15rem 1.4rem;background:none;border:none;font-family:'Inter',sans-serif;font-weight:700;font-size:.93rem;color:var(--ink);text-align:left;gap:1rem;cursor:pointer;transition:color var(--ease)}
+.faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;padding:1.15rem 1.4rem;background:none;border:none;font-family:'Lato',sans-serif;font-weight:700;font-size:.93rem;color:var(--ink);text-align:left;gap:1rem;cursor:pointer;transition:color var(--ease)}
 .faq-q:hover{color:var(--teal)}
 .faq-ico{width:28px;height:28px;border-radius:50%;background:var(--teal-lt);display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:1.1rem;flex-shrink:0;transition:transform .3s,background .2s}
 .faq-item.open .faq-ico{transform:rotate(45deg);background:var(--teal);color:#fff}
@@ -269,7 +276,7 @@ section{padding:90px 0}
 
 /* ══ FORMS ════════════════════════════════════════ */
 .form-wrap{background:#fff;border-radius:var(--r-xl);padding:2.8rem 3rem;box-shadow:var(--sh-lg);max-width:840px;margin:0 auto}
-.form-title{font-family:'DM Serif Display',serif;font-size:1.7rem;margin-bottom:.35rem;color:var(--ink);font-weight:400}
+.form-title{font-family:'Playfair Display',serif;font-size:1.7rem;margin-bottom:.35rem;color:var(--ink);font-weight:400}
 .form-sub{color:var(--ink-mid);font-size:.92rem;margin-bottom:2.2rem}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
 .fg-full{grid-column:1/-1}
@@ -282,14 +289,14 @@ section{padding:90px 0}
 textarea.fc{resize:vertical;min-height:100px}
 select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B8886' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem}
 .ftoggle{display:flex;gap:1rem;grid-column:1/-1}
-.ftbtn{flex:1;padding:1rem;border-radius:var(--r-md);border:2px solid var(--border);background:#fff;font-family:'Inter',sans-serif;font-weight:700;font-size:.9rem;color:var(--ink-mid);cursor:pointer;transition:all var(--ease);display:flex;flex-direction:column;align-items:center;gap:.35rem}
+.ftbtn{flex:1;padding:1rem;border-radius:var(--r-md);border:2px solid var(--border);background:#fff;font-family:'Lato',sans-serif;font-weight:700;font-size:.9rem;color:var(--ink-mid);cursor:pointer;transition:all var(--ease);display:flex;flex-direction:column;align-items:center;gap:.35rem}
 .ftbtn .fi{font-size:1.8rem}
 .ftbtn:hover{border-color:var(--teal);color:var(--teal)}
 .ftbtn.on{border-color:var(--teal);background:var(--teal-lt);color:var(--teal)}
 .dfields{display:none}
 .dfields.show{display:contents}
 .amt-g{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;grid-column:1/-1}
-.abtn{padding:.72rem;border-radius:var(--r-md);border:1.5px solid var(--border);background:#fff;font-family:'Inter',sans-serif;font-weight:700;font-size:.93rem;color:var(--ink);cursor:pointer;transition:all var(--ease)}
+.abtn{padding:.72rem;border-radius:var(--r-md);border:1.5px solid var(--border);background:#fff;font-family:'Lato',sans-serif;font-weight:700;font-size:.93rem;color:var(--ink);cursor:pointer;transition:all var(--ease)}
 .abtn:hover{border-color:var(--teal);color:var(--teal)}
 .abtn.sel{border-color:var(--amber);background:var(--amber-lt);color:var(--amber-dk)}
 .cb-group{display:flex;flex-direction:column;gap:.55rem}
@@ -352,9 +359,9 @@ footer{background:var(--teal-deep);color:#fff;padding:68px 5vw 28px}
 .captcha-wrap{grid-column:1/-1;background:var(--off);border:1.5px solid var(--border);border-radius:var(--r-md);padding:1.2rem 1.4rem}
 .captcha-wrap label{display:block;font-size:.8rem;font-weight:700;color:var(--ink);margin-bottom:.7rem}
 .captcha-row{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
-.captcha-q{font-family:'DM Serif Display',serif;font-size:1.2rem;color:var(--ink);background:#fff;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.45rem .9rem;white-space:nowrap}
+.captcha-q{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--ink);background:#fff;border:1.5px solid var(--border);border-radius:var(--r-sm);padding:.45rem .9rem;white-space:nowrap}
 .captcha-eq{font-size:1rem;font-weight:700;color:var(--ink-mid)}
-.captcha-inp{width:80px;padding:.55rem .75rem;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Inter',sans-serif;font-size:1rem;font-weight:700;color:var(--ink);text-align:center;outline:none;transition:border-color var(--ease),box-shadow var(--ease)}
+.captcha-inp{width:80px;padding:.55rem .75rem;border:1.5px solid var(--border);border-radius:var(--r-sm);font-family:'Lato',sans-serif;font-size:1rem;font-weight:700;color:var(--ink);text-align:center;outline:none;transition:border-color var(--ease),box-shadow var(--ease)}
 .captcha-inp:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(27,163,156,.12)}
 .captcha-inp.err{border-color:#e53e3e;background:#fff5f5}
 .captcha-inp.ok{border-color:var(--teal);background:var(--teal-lt)}
@@ -770,7 +777,7 @@ img,video,iframe{max-width:100%}
   display:flex;align-items:center;gap:9px;
   margin:0 0 19px;
   color:#225a49;
-  font-family:Inter,Arial,sans-serif;
+  font-family:'Lato',Arial,sans-serif;
   font-weight:800;
   font-size:clamp(.7rem,.9vw,.79rem);
   letter-spacing:.12em;
@@ -779,7 +786,7 @@ img,video,iframe{max-width:100%}
 .dkf-brooklyn-teaser .dkf-brooklyn-label svg { flex:none; color:#d8aa2e; }
 .dkf-brooklyn-teaser h2 {
   margin:0 0 19px;
-  font-family:'DM Serif Display',Georgia,serif;
+  font-family:'Playfair Display',Georgia,serif;
   font-size:clamp(2.2rem,3.4vw,4.1rem);
   font-weight:400;
   line-height:1.075;
@@ -805,7 +812,7 @@ img,video,iframe{max-width:100%}
   background:#103b2f;
   color:#fff;
   text-decoration:none;
-  font-family:Inter,Arial,sans-serif;
+  font-family:'Lato',Arial,sans-serif;
   font-size:.94rem;
   font-weight:800;
   transition:transform .18s ease,background .18s ease;
@@ -1009,9 +1016,9 @@ img,video,iframe{max-width:100%}
 </div>
 </section>
 <!-- Testimonials -->
-<section class="section-dark">
+<section class="stories-section">
 <div class="wrap">
-<div class="sh rev"><p class="eyebrow">Stories</p><h2>What a laptop <span class="t-teal">really means</span></h2></div>
+<div class="sh rev"><p class="eyebrow">Stories</p><h2><span class="muted-kicker">What a laptop</span><span class="t-teal">really means</span></h2></div>
 <div class="g3">
 <div class="tcard rev"><blockquote>"My daughter used to do homework on my phone. The laptop from Digital Kids Foundation changed everything — she's on the honor roll for the first time."</blockquote><div class="tcard-auth"><div class="tcard-av">M</div><div><div class="tcard-name">Maria G.</div><div class="tcard-role">Parent, Bronx NY</div></div></div></div>
 <div class="tcard rev"><blockquote>"I received a laptop from Digital Kids Foundation when I needed it most — to complete a school project. I was so happy and thankful. It made a real difference for me."</blockquote><div class="tcard-auth"><div class="tcard-av">J</div><div><div class="tcard-name">Jamie</div><div class="tcard-role">Student, Brooklyn NY</div></div></div></div>
