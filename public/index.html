@@ -225,20 +225,21 @@ section{padding:90px 0}
 .pill{display:inline-flex;align-items:center;background:var(--teal-lt);color:var(--teal-deep);padding:.3rem .85rem;border-radius:50px;font-size:.75rem;font-weight:700;letter-spacing:.04em}
 .pill.amb{background:var(--amber-lt);color:var(--amber-dk)}
 
-/* ══ STORIES / TESTIMONIALS ═════════════════════════ */
-.stories-section{background:linear-gradient(180deg,#f6fbfa 0%,#eef7f5 100%)}
-.stories-section .sh{display:flex;flex-direction:column;gap:.55rem;margin-bottom:2.5rem}
-.stories-section .sh h2{color:var(--ink);max-width:800px}
-.stories-section .sh .muted-kicker{color:var(--ink-lt);font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,4.2rem);line-height:1;opacity:.12;display:block;margin-bottom:-.35rem;letter-spacing:-.04em}
+/* ══ STORIES / TESTIMONIALS · DKF SELECTED DARK DESIGN ═════════ */
+.stories-section{background:#26391e;color:#fff}
+.stories-section .sh{margin-bottom:2.6rem}
+.stories-section .eyebrow{color:#5da4a1;font-family:'Lato',sans-serif;font-weight:900;letter-spacing:.2em}
+.stories-section .sh h2{color:#fff;max-width:none;font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:clamp(2rem,3.6vw,3.15rem);line-height:1.18;letter-spacing:-.02em}
+.stories-section .sh h2 .t-teal{color:#5da4a1}
 .stories-section .g3{align-items:stretch}
-.tcard{background:#fff;border-radius:var(--r-lg);padding:1.9rem;border:1px solid #d6e7e4;border-left:5px solid var(--teal);box-shadow:0 10px 28px rgba(13,43,40,.07);height:100%}
-.tcard blockquote{font-family:'Playfair Display',serif;font-style:italic;color:var(--ink);font-size:1.03rem;line-height:1.8;margin-bottom:1.35rem}
-.tcard-auth{display:flex;align-items:center;gap:.85rem;margin-top:auto}
-.tcard-av{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--teal) 0%,#5fb5b0 100%);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:1.15rem;flex-shrink:0;box-shadow:0 8px 18px rgba(27,163,156,.24)}
-.tcard-name{font-weight:900;font-size:.98rem;color:var(--ink)}
-.tcard-role{font-size:.82rem;color:var(--ink-lt)}
-.stories-section .t-teal{color:var(--teal-dk)}
-@media(max-width:720px){.stories-section .sh .muted-kicker{font-size:2.4rem;margin-bottom:0}.tcard{padding:1.45rem}.tcard blockquote{font-size:.98rem}}
+.stories-section .tcard{display:flex;flex-direction:column;background:#35472e;border:0;border-left:4px solid #59a09b;border-radius:24px;padding:2rem 2.1rem;box-shadow:none;min-height:335px;color:#fff}
+.stories-section .tcard blockquote{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-size:clamp(.95rem,1.04vw,1.075rem);font-weight:600;line-height:1.8;color:#f3f4ed;margin:0 0 1.45rem;overflow-wrap:break-word}
+.stories-section .tcard-auth{display:flex;align-items:center;gap:.8rem;margin-top:auto}
+.stories-section .tcard-av{width:47px;height:47px;border-radius:50%;background:#5aa49f;display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Lato',sans-serif;font-size:1.1rem;font-weight:900;flex-shrink:0;box-shadow:none}
+.stories-section .tcard-name{color:#fff;font-family:'Lato',sans-serif;font-size:.93rem;font-weight:900}
+.stories-section .tcard-role{color:#adbda9;font-family:'Lato',sans-serif;font-size:.8rem}
+@media(max-width:900px){.stories-section .g3{grid-template-columns:1fr 1fr}.stories-section .tcard{min-height:310px}}
+@media(max-width:670px){.stories-section .g3{grid-template-columns:1fr}.stories-section .tcard{min-height:0;padding:1.7rem}.stories-section .sh h2{font-size:clamp(2rem,8vw,2.7rem)}}
 
 /* ══ SERVE CARDS ══════════════════════════════════ */
 .svc{border-left:4px solid var(--teal);padding-left:1.4rem}
@@ -841,6 +842,41 @@ img,video,iframe{max-width:100%}
 /* Keep compact desktop nav layout from previous DKF initiative update */
 @media(min-width:881px) and (max-width:1180px){.nav-links{gap:.78rem}.nav-links a{font-size:.77rem}.nav-acts{gap:.4rem}.nav-acts .btn{padding:.55rem .85rem}.nav-logo img{height:58px}.nav-logo{height:58px}}
 </style>
+
+<style id="dkf-compact-spacing">
+
+/* DKF section rhythm / 2026-11-08: tighter layout, original colors and cards retained */
+#pg-home > section:not(.hero):not(.dkf-brooklyn-teaser) {
+  padding-top: 68px;
+  padding-bottom: 68px;
+}
+#pg-home > section.dkf-brooklyn-teaser {
+  padding-top: 25px !important;
+  padding-bottom: 25px !important;
+}
+#pg-home > section.dkf-home-donors {
+  padding-top: 58px;
+  padding-bottom: 58px;
+}
+#pg-home .sh { margin-bottom: 2.1rem; }
+#pg-home > section:not(.hero) .g2 { gap: clamp(1.8rem, 3.5vw, 3.8rem); }
+.page:not(#pg-home) > section:not(.ph) {
+  padding-top: 68px;
+  padding-bottom: 68px;
+}
+.page:not(#pg-home) .sh { margin-bottom: 2.1rem; }
+@media (max-width: 960px) {
+  #pg-home > section:not(.hero):not(.dkf-brooklyn-teaser) { padding-top: 54px; padding-bottom: 54px; }
+  .page:not(#pg-home) > section:not(.ph) { padding-top: 54px; padding-bottom: 54px; }
+}
+@media (max-width: 640px) {
+  #pg-home > section:not(.hero):not(.dkf-brooklyn-teaser) { padding-top: 36px !important; padding-bottom: 36px !important; }
+  #pg-home > section.dkf-brooklyn-teaser { padding-top: 20px !important; padding-bottom: 20px !important; }
+  .page:not(#pg-home) > section:not(.ph) { padding-top: 40px !important; padding-bottom: 40px !important; }
+  #pg-home .sh, .page:not(#pg-home) .sh { margin-bottom: 1.55rem; }
+}
+
+</style>
 </head>
 <body>
 <!-- ══ NAV ══════════════════════════════════════════ -->
@@ -1007,10 +1043,97 @@ img,video,iframe{max-width:100%}
 </div>
 </div>
 </section>
+<!-- DKF STORIES CONTRAST FIX START -->
+<style id="dkf-stories-contrast-fix">
+/* Deliberately scoped to the Stories section. Prevent older site rules from washing it out. */
+section.dkf-stories-theme,
+section.dkf-stories-theme.section-dark,
+section.dkf-stories-theme.stories-section {
+  background: #24361f !important;
+  background-color: #24361f !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+section.dkf-stories-theme .sh h2 {
+  color: #ffffff !important;
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-size: clamp(2.05rem, 3.7vw, 3.15rem);
+  font-weight: 700;
+  line-height: 1.22;
+  letter-spacing: -0.025em;
+}
+section.dkf-stories-theme .sh h2 .t-teal {
+  color: #5da6a2 !important;
+}
+section.dkf-stories-theme .eyebrow {
+  color: #5da6a2 !important;
+  font-family: 'Lato', Arial, sans-serif !important;
+  font-weight: 900;
+  letter-spacing: .18em;
+}
+section.dkf-stories-theme .g3 { align-items: stretch; }
+section.dkf-stories-theme .tcard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 335px;
+  padding: 2rem 2.1rem;
+  background: #35472f !important;
+  background-image: none !important;
+  border: none !important;
+  border-left: 4px solid #60a8a4 !important;
+  border-radius: 24px;
+  box-shadow: none;
+  color: #ffffff !important;
+}
+section.dkf-stories-theme .tcard blockquote {
+  margin: 0 0 1.5rem;
+  color: #f6f6f0 !important;
+  font-family: 'Playfair Display', Georgia, serif !important;
+  font-size: clamp(.97rem, 1.05vw, 1.08rem);
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.85;
+}
+section.dkf-stories-theme .tcard-auth {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  margin-top: auto;
+}
+section.dkf-stories-theme .tcard-av {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #5ba5a1 !important;
+  box-shadow: none;
+  color: #ffffff !important;
+  font-family: 'Lato', Arial, sans-serif !important;
+  font-weight: 900;
+}
+section.dkf-stories-theme .tcard-name {
+  color: #ffffff !important;
+  font-family: 'Lato', Arial, sans-serif !important;
+  font-weight: 900;
+}
+section.dkf-stories-theme .tcard-role {
+  color: #c3cebf !important;
+  font-family: 'Lato', Arial, sans-serif !important;
+}
+@media (max-width: 900px) {
+  section.dkf-stories-theme .g3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 650px) {
+  section.dkf-stories-theme .g3 { grid-template-columns: 1fr; }
+  section.dkf-stories-theme .tcard { min-height: auto; padding: 1.65rem; }
+}
+</style>
+<!-- DKF STORIES CONTRAST FIX END -->
 <!-- Testimonials -->
-<section class="stories-section">
+<section class="stories-section dkf-stories-theme" style="background:#24361f!important;color:#fff!important;">
 <div class="wrap">
-<div class="sh rev"><p class="eyebrow">Stories</p><h2><span class="muted-kicker">What a laptop</span><span class="t-teal">really means</span></h2></div>
+<div class="sh rev"><p class="eyebrow">Stories</p><h2>What a laptop <span class="t-teal">really means</span></h2></div>
 <div class="g3">
 <div class="tcard rev"><blockquote>"My daughter used to do homework on my phone. The laptop from Digital Kids Foundation changed everything — she's on the honor roll for the first time."</blockquote><div class="tcard-auth"><div class="tcard-av">M</div><div><div class="tcard-name">Maria G.</div><div class="tcard-role">Parent, Bronx NY</div></div></div></div>
 <div class="tcard rev"><blockquote>"I received a laptop from Digital Kids Foundation when I needed it most — to complete a school project. I was so happy and thankful. It made a real difference for me."</blockquote><div class="tcard-auth"><div class="tcard-av">J</div><div><div class="tcard-name">Jamie</div><div class="tcard-role">Student, Brooklyn NY</div></div></div></div>
