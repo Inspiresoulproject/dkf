@@ -1569,11 +1569,27 @@ function closeMob() { document.getElementById('mob').classList.remove('open'); c
 // Support legacy About/FAQ links redirected to homepage fragments.
 window.addEventListener('DOMContentLoaded', () => {
   const section = window.location.hash.slice(1).toLowerCase();
-  if (section === 'about' || section === 'faq') go(section);
+  if (['about','faq','donate','contact','donate-device','contact-partner'].includes(section)) {
+    const page = section === 'donate-device' ? 'donate' : (section === 'contact-partner' ? 'contact' : section);
+    go(page);
+    if (section === 'donate-device') switchDonate('device');
+    if (section === 'contact-partner') {
+      const subject = document.querySelector('#pg-contact select[name="subject"]');
+      if (subject) subject.value = 'Corporate / School Partnership';
+    }
+  }
 });
 window.addEventListener('hashchange', () => {
   const section = window.location.hash.slice(1).toLowerCase();
-  if (section === 'about' || section === 'faq') go(section);
+  if (['about','faq','donate','contact','donate-device','contact-partner'].includes(section)) {
+    const page = section === 'donate-device' ? 'donate' : (section === 'contact-partner' ? 'contact' : section);
+    go(page);
+    if (section === 'donate-device') switchDonate('device');
+    if (section === 'contact-partner') {
+      const subject = document.querySelector('#pg-contact select[name="subject"]');
+      if (subject) subject.value = 'Corporate / School Partnership';
+    }
+  }
 });
 
 /* ── NAV SCROLL ──────────────────────────────── */
