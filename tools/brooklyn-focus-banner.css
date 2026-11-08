@@ -1,0 +1,96 @@
+/* Brooklyn Digital Access Initiative — homepage feature, directly after Our Focus */
+.dkf-brooklyn-teaser {
+  padding:clamp(36px,5vw,70px) clamp(15px,4vw,64px) !important;
+  background:linear-gradient(180deg,#f4f8f4 0%,#f8faf7 100%) !important;
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-inner {
+  max-width:1470px;
+  margin:0 auto;
+  padding:clamp(22px,3vw,48px);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+  gap:clamp(20px,3vw,50px);
+  align-items:center;
+  border:1px solid #dce8df;
+  border-left:7px solid #e4b33e;
+  border-radius:26px;
+  background:#fff;
+  box-shadow:0 18px 48px rgba(22,54,42,.085);
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-copy { min-width:0; }
+.dkf-brooklyn-teaser .dkf-brooklyn-label {
+  display:flex;align-items:center;gap:9px;
+  margin:0 0 19px;
+  color:#225a49;
+  font-family:Inter,Arial,sans-serif;
+  font-weight:800;
+  font-size:clamp(.7rem,.9vw,.79rem);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-label svg { flex:none; color:#d8aa2e; }
+.dkf-brooklyn-teaser h2 {
+  margin:0 0 19px;
+  font-family:'DM Serif Display',Georgia,serif;
+  font-size:clamp(2.2rem,3.4vw,4.1rem);
+  font-weight:400;
+  line-height:1.075;
+  letter-spacing:-.022em;
+  color:#103b2f;
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-copy > p.dkf-brooklyn-desc {
+  margin:0;
+  max-width:680px;
+  color:#475d55;
+  font-size:clamp(.93rem,1.1vw,1.1rem);
+  line-height:1.75;
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-action {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  min-height:52px;
+  margin-top:25px;
+  padding:14px 24px;
+  border-radius:12px;
+  background:#103b2f;
+  color:#fff;
+  text-decoration:none;
+  font-family:Inter,Arial,sans-serif;
+  font-size:.94rem;
+  font-weight:800;
+  transition:transform .18s ease,background .18s ease;
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-action:hover,
+.dkf-brooklyn-teaser .dkf-brooklyn-action:focus-visible {
+  color:#fff;background:#1c5a46;transform:translateY(-2px);
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-action:focus-visible { outline:3px solid #eab522;outline-offset:4px; }
+.dkf-brooklyn-teaser .dkf-brooklyn-visual { margin:0; min-width:0; }
+.dkf-brooklyn-teaser .dkf-brooklyn-visual img { width:100%;height:auto;display:block;border-radius:18px; }
+.dkf-brooklyn-teaser .dkf-brooklyn-visual figcaption {
+  margin-top:3px;
+  text-align:right;
+  color:#667a6d;
+  font-size:.64rem;
+  letter-spacing:.015em;
+}
+@media(max-width:1000px){
+  .dkf-brooklyn-teaser .dkf-brooklyn-inner {grid-template-columns:1fr;gap:12px;padding:clamp(22px,4vw,38px)}
+  .dkf-brooklyn-teaser h2 {font-size:clamp(2.2rem,6vw,3.6rem)}
+  .dkf-brooklyn-teaser .dkf-brooklyn-visual {max-width:750px;width:100%;margin:8px auto 0;}
+}
+@media(max-width:560px){
+  .dkf-brooklyn-teaser {padding:32px 15px!important}
+  .dkf-brooklyn-teaser .dkf-brooklyn-inner {border-left-width:5px;border-radius:18px;padding:24px 18px;gap:16px}
+  .dkf-brooklyn-teaser .dkf-brooklyn-label {font-size:.67rem;letter-spacing:.07em;margin-bottom:13px}
+  .dkf-brooklyn-teaser h2 {font-size:clamp(2.15rem,9vw,3rem);line-height:1.1}
+  .dkf-brooklyn-teaser .dkf-brooklyn-action {display:flex;width:100%;margin-top:19px;white-space:normal;text-align:center}
+  .dkf-brooklyn-teaser .dkf-brooklyn-visual img {border-radius:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .dkf-brooklyn-teaser .dkf-brooklyn-action {transition:none}
+}
+/* Keep compact desktop nav layout from previous DKF initiative update */
+@media(min-width:881px) and (max-width:1180px){.nav-links{gap:.78rem}.nav-links a{font-size:.77rem}.nav-acts{gap:.4rem}.nav-acts .btn{padding:.55rem .85rem}.nav-logo img{height:58px}.nav-logo{height:58px}}

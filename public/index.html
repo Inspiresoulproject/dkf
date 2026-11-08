@@ -737,17 +737,102 @@ img,video,iframe{max-width:100%}
 </style>
 
 <style>
-/* Brooklyn Digital Access Initiative - homepage feature */
-.dkf-brooklyn-teaser{background:#f2f7f2!important;padding:60px 5vw!important}
-.dkf-brooklyn-teaser .dkf-brooklyn-inner{max-width:1230px;margin:0 auto;background:#fff;border:1px solid #dfebe1;border-radius:20px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:36px;padding:38px 45px;box-shadow:0 18px 50px rgba(15,59,43,.06);border-left:6px solid #eab522}
-.dkf-brooklyn-teaser .dkf-brooklyn-label{font-size:.73rem;letter-spacing:.16em;font-weight:800;color:#237b69;text-transform:uppercase;margin:0 0 10px}
-.dkf-brooklyn-teaser h2{font-size:clamp(1.7rem,3vw,2.6rem);line-height:1.14;color:#103b2f;margin:0 0 12px}
-.dkf-brooklyn-teaser p{font-size:.96rem;line-height:1.72;color:#5b7265;margin:0;max-width:750px}
-.dkf-brooklyn-teaser .dkf-brooklyn-status{display:inline-block;background:#e8f0e9;border-radius:50px;padding:7px 13px;font-size:.73rem;color:#376b52;font-weight:800;margin-top:15px}
-.dkf-brooklyn-teaser .dkf-brooklyn-action{background:#103b2f;color:#fff;padding:16px 24px;font-size:.9rem;font-weight:800;border-radius:8px;display:inline-block;white-space:nowrap;transition:background .2s,transform .2s}
-.dkf-brooklyn-teaser .dkf-brooklyn-action:hover{background:#24735c;transform:translateY(-2px)}
+/* Brooklyn Digital Access Initiative — homepage feature, directly after Our Focus */
+.dkf-brooklyn-teaser {
+  padding:clamp(36px,5vw,70px) clamp(15px,4vw,64px) !important;
+  background:linear-gradient(180deg,#f4f8f4 0%,#f8faf7 100%) !important;
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-inner {
+  max-width:1470px;
+  margin:0 auto;
+  padding:clamp(22px,3vw,48px);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);
+  gap:clamp(20px,3vw,50px);
+  align-items:center;
+  border:1px solid #dce8df;
+  border-left:7px solid #e4b33e;
+  border-radius:26px;
+  background:#fff;
+  box-shadow:0 18px 48px rgba(22,54,42,.085);
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-copy { min-width:0; }
+.dkf-brooklyn-teaser .dkf-brooklyn-label {
+  display:flex;align-items:center;gap:9px;
+  margin:0 0 19px;
+  color:#225a49;
+  font-family:Inter,Arial,sans-serif;
+  font-weight:800;
+  font-size:clamp(.7rem,.9vw,.79rem);
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-label svg { flex:none; color:#d8aa2e; }
+.dkf-brooklyn-teaser h2 {
+  margin:0 0 19px;
+  font-family:'DM Serif Display',Georgia,serif;
+  font-size:clamp(2.2rem,3.4vw,4.1rem);
+  font-weight:400;
+  line-height:1.075;
+  letter-spacing:-.022em;
+  color:#103b2f;
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-copy > p.dkf-brooklyn-desc {
+  margin:0;
+  max-width:680px;
+  color:#475d55;
+  font-size:clamp(.93rem,1.1vw,1.1rem);
+  line-height:1.75;
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-action {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  min-height:52px;
+  margin-top:25px;
+  padding:14px 24px;
+  border-radius:12px;
+  background:#103b2f;
+  color:#fff;
+  text-decoration:none;
+  font-family:Inter,Arial,sans-serif;
+  font-size:.94rem;
+  font-weight:800;
+  transition:transform .18s ease,background .18s ease;
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-action:hover,
+.dkf-brooklyn-teaser .dkf-brooklyn-action:focus-visible {
+  color:#fff;background:#1c5a46;transform:translateY(-2px);
+}
+.dkf-brooklyn-teaser .dkf-brooklyn-action:focus-visible { outline:3px solid #eab522;outline-offset:4px; }
+.dkf-brooklyn-teaser .dkf-brooklyn-visual { margin:0; min-width:0; }
+.dkf-brooklyn-teaser .dkf-brooklyn-visual img { width:100%;height:auto;display:block;border-radius:18px; }
+.dkf-brooklyn-teaser .dkf-brooklyn-visual figcaption {
+  margin-top:3px;
+  text-align:right;
+  color:#667a6d;
+  font-size:.64rem;
+  letter-spacing:.015em;
+}
+@media(max-width:1000px){
+  .dkf-brooklyn-teaser .dkf-brooklyn-inner {grid-template-columns:1fr;gap:12px;padding:clamp(22px,4vw,38px)}
+  .dkf-brooklyn-teaser h2 {font-size:clamp(2.2rem,6vw,3.6rem)}
+  .dkf-brooklyn-teaser .dkf-brooklyn-visual {max-width:750px;width:100%;margin:8px auto 0;}
+}
+@media(max-width:560px){
+  .dkf-brooklyn-teaser {padding:32px 15px!important}
+  .dkf-brooklyn-teaser .dkf-brooklyn-inner {border-left-width:5px;border-radius:18px;padding:24px 18px;gap:16px}
+  .dkf-brooklyn-teaser .dkf-brooklyn-label {font-size:.67rem;letter-spacing:.07em;margin-bottom:13px}
+  .dkf-brooklyn-teaser h2 {font-size:clamp(2.15rem,9vw,3rem);line-height:1.1}
+  .dkf-brooklyn-teaser .dkf-brooklyn-action {display:flex;width:100%;margin-top:19px;white-space:normal;text-align:center}
+  .dkf-brooklyn-teaser .dkf-brooklyn-visual img {border-radius:12px}
+}
+@media(prefers-reduced-motion:reduce){
+  .dkf-brooklyn-teaser .dkf-brooklyn-action {transition:none}
+}
+/* Keep compact desktop nav layout from previous DKF initiative update */
 @media(min-width:881px) and (max-width:1180px){.nav-links{gap:.78rem}.nav-links a{font-size:.77rem}.nav-acts{gap:.4rem}.nav-acts .btn{padding:.55rem .85rem}.nav-logo img{height:58px}.nav-logo{height:58px}}
-@media(max-width:760px){.dkf-brooklyn-teaser{padding:35px 5vw!important}.dkf-brooklyn-teaser .dkf-brooklyn-inner{grid-template-columns:1fr;padding:28px 22px;gap:21px}.dkf-brooklyn-teaser .dkf-brooklyn-action{white-space:normal;text-align:center}}
 </style>
 </head>
 <body>
@@ -810,18 +895,7 @@ img,video,iframe{max-width:100%}
 </div>
 </div>
 </section>
-<!-- Upcoming Brooklyn Digital Access Initiative: planning announcement, not a report of laptops distributed -->
-<section class="dkf-brooklyn-teaser" aria-label="Upcoming Brooklyn Digital Access Initiative">
-  <div class="dkf-brooklyn-inner">
-    <div>
-      <p class="dkf-brooklyn-label">Upcoming Initiative · Brooklyn, New York</p>
-      <h2>40–50 laptops. More opportunities to learn.</h2>
-      <p>Digital Kids Foundation is preparing the <strong>Brooklyn Digital Access Initiative</strong> to help children from underserved households gain access to computers for education. We're seeking laptop donors and community partners to help launch the first pilot.</p>
-      <span class="dkf-brooklyn-status">Planning stage · Applications not yet open</span>
-    </div>
-    <div><a class="dkf-brooklyn-action" href="/brooklyn-digital-access/">Explore the initiative &rarr;</a></div>
-  </div>
-</section>
+
 <!-- Marquee -->
 <div class="mq"><div class="mq-track">
 <span class="mq-item"><span class="mq-dot">◆</span>Donate a Laptop, Change a Life</span>
@@ -876,6 +950,21 @@ img,video,iframe{max-width:100%}
 </div>
 </div>
 </div>
+</section>
+<!-- Upcoming Brooklyn Digital Access Initiative — placed directly after Our Focus -->
+<section class="dkf-brooklyn-teaser" aria-label="Upcoming Brooklyn Digital Access Initiative">
+  <div class="dkf-brooklyn-inner">
+    <div class="dkf-brooklyn-copy">
+      <p class="dkf-brooklyn-label"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg> Upcoming Initiative · Brooklyn, New York</p>
+      <h2>40–50 laptops. More opportunities to learn.</h2>
+      <p class="dkf-brooklyn-desc">Digital Kids Foundation is preparing the <strong>Brooklyn Digital Access Initiative</strong> to expand access to computers for children from underserved households. Our goal is to secure <strong>40–50 laptops</strong>, and we’re inviting laptop donors and local community partners to help launch the pilot.</p>
+      <a class="dkf-brooklyn-action" href="/brooklyn-digital-access/">Explore the initiative <span aria-hidden="true">→</span></a>
+    </div>
+    <figure class="dkf-brooklyn-visual">
+      <img src="/images/dkf-brooklyn-focus-hero.webp" width="1060" height="620" loading="lazy" decoding="async" alt="Illustration of three Brooklyn students collaborating on a laptop displaying the Digital Kids Foundation logo, with a goal of 40–50 laptops"/>
+      <figcaption>Illustrative image</figcaption>
+    </figure>
+  </div>
 </section>
 <!-- Process -->
 <section style="background:var(--teal-deep)">
