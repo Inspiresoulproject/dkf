@@ -151,7 +151,10 @@ app.get('/verify-email', async (req,res) => {
         if (!thankYou.ok) console.error('Volunteer thank-you email could not be delivered for verified application.');
       } catch (err) { console.error('Volunteer thank-you email error:', err); }
     }
-    return res.send(verificationPage('Thank you for reaching out!','Your submission has been received by Digital Kids Foundation. Our team will review it and contact you if further information is needed.'));
+    // This page is issued only after one-time email verification and successful delivery.
+    // No personal information is included in analytics events.
+    const verifiedEvent = type === 'donation' ? 'laptop_donation_submit' : null;
+    return res.send(verificationPage('Thank you for reaching out!','Your submission has been received by Digital Kids Foundation. Our team will review it and contact you if further information is needed.').replace('</body>', verifiedEvent ? `<script>window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'${verifiedEvent}'});</script></body>` : '</body>'));
   } catch(e) { console.error('Email verification failed:',e); return res.status(500).send(verificationPage('Verification unavailable','Please try again later or contact our team.')); }
 });
 function verificationPage(title,message) {
