@@ -1999,11 +1999,10 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
           success.innerHTML = '<div class="sicon">✉️</div><h3>Check Your Email</h3><p>We sent a verification link to the email address you entered. Please click it within <strong>30 minutes</strong> to complete your submission. DKF will receive your application only after verification.</p><p style="margin-top:.7rem">If you do not see it, check your spam folder.</p>';
         }
         success.style.display = 'block';
-        // Only count a contact inquiry after successful server acceptance.
-        // Device donation inquiries require email verification and are tracked on verification success.
-        if (!body.verificationRequired && formId === 'con-form') {
+        // Track only successful server-accepted submissions, never button clicks.
+        if (!body.verificationRequired) {
           window.dataLayer = window.dataLayer || [];
-          window.dataLayer.push({event: 'contact_form_submit'});
+          window.dataLayer.push({event: formId === 'don-form' ? 'laptop_donation_submit' : (formId === 'con-form' ? 'contact_form_submit' : 'volunteer_form_submit')});
         }
       } else {
         var msg = body.error || ('Error ' + res.status);

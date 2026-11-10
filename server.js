@@ -186,22 +186,16 @@ app.post('/api/submit', rateLimit, async (req, res) => {
     const replyTo = emailKey && validEmail(data[emailKey]) ? data[emailKey] : undefined;
     if (type === 'website') return res.status(400).json({ok:false,error:'Unknown form type.'});
     const labels = {contact:'Contact Message', volunteer:'Volunteer Application', donation:'Device Donation Submission'};
-    if (type !== 'contact') {
-      if (!verificationEnabled()) return res.status(503).json({ok:false,error:'Email verification is temporarily unavailable. Please try again later.'});
-      const token = crypto.randomBytes(32).toString('hex');
-      await store.save(token, {type, data});
-      const link = `${BASE_URL}/verify-email?token=${encodeURIComponent(token)}`;
-      const result = await sendMail({
-        from:`Digital Kids Foundation <${mailFrom}>`, to:[data.email],
-        subject:'Confirm your email — Digital Kids Foundation',
-        text:`Please confirm your email address to complete your ${labels[type].toLowerCase()}.\n\n${link}\n\nThis link expires in 30 minutes. If you did not submit a form, ignore this email.`,
-        html:`<h2>Confirm your email address</h2><p>To complete your ${esc(labels[type].toLowerCase())}, please verify your email address:</p><p><a href="${esc(link)}">Verify my email</a></p><p>This link expires in 30 minutes. If you did not submit a form, ignore this email.</p>`
-      });
-      if (!result.ok) { await store.discard(token); return res.status(502).json({ok:false,error:'Could not send verification email. Please try again later.'}); }
-      return res.json({ok:true,verificationRequired:true});
-    }
+    // All public inquiry forms are accepted directly after server-side validation
+    // and Cloudflare Turnstile. Email verification is no longer mandatory.
     const result = await sendMail(buildNotification(type, data, mailFrom, mailTo, replyTo));
     if (!result.ok) return res.status(502).json({ok:false,error:'Unable to send your submission right now.'});
+    if (type === 'volunteer') {
+      try {
+        const acknowledgement = await sendMail(volunteerThankYou(data, mailFrom));
+        if (!acknowledgement.ok) console.error('Volunteer acknowledgement email failed.');
+      } catch (err) { console.error('Volunteer acknowledgement error:', err); }
+    }
     return res.json({ok:true,id:result.id});
   } catch (e) {
     console.error('Submit error', e);
