@@ -877,6 +877,91 @@ img,video,iframe{max-width:100%}
 }
 
 </style>
+
+<style id="dkf-contact-mobile-verified-v4">
+/* Contact Us layout v4 — verified in the file actually served by Express: public/index.html. */
+#pg-contact{overflow-x:clip}
+#pg-contact .dkf-contact-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,340px);
+  gap:3rem;
+  align-items:start;
+  max-width:1040px;
+  margin:0 auto;
+}
+#pg-contact .dkf-contact-layout>*{min-width:0}
+#pg-contact .dkf-contact-sidebar{position:sticky;top:88px;min-width:0}
+#pg-contact .dkf-contact-layout .fc,
+#pg-contact .dkf-contact-layout input,
+#pg-contact .dkf-contact-layout select,
+#pg-contact .dkf-contact-layout textarea{min-width:0;max-width:100%;box-sizing:border-box}
+#pg-contact .dkf-contact-layout .foot-ci,
+#pg-contact .dkf-contact-layout .foot-ci>div{min-width:0;max-width:100%}
+#pg-contact .dkf-contact-layout a{overflow-wrap:anywhere;word-break:break-word}
+
+@media (max-width:900px){
+  #pg-contact>section>.wrap{
+    width:100%!important;
+    max-width:760px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    padding-left:20px!important;
+    padding-right:20px!important;
+    box-sizing:border-box!important;
+  }
+  #pg-contact .dkf-contact-layout{
+    display:flex!important;
+    flex-direction:column!important;
+    grid-template-columns:none!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    gap:22px!important;
+    margin:0!important;
+  }
+  #pg-contact .dkf-contact-layout>.form-wrap,
+  #pg-contact .dkf-contact-layout>.dkf-contact-sidebar{
+    display:block!important;
+    position:static!important;
+    top:auto!important;
+    float:none!important;
+    clear:both!important;
+    flex:0 0 auto!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    transform:none!important;
+    opacity:1!important;
+  }
+  #pg-contact .dkf-contact-layout>.form-wrap{order:1}
+  #pg-contact .dkf-contact-layout>.dkf-contact-sidebar{order:2}
+  #pg-contact .dkf-contact-layout .fg{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+  }
+  #pg-contact .dkf-contact-layout .fg>*{
+    grid-column:1/-1!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  #pg-contact .dkf-contact-layout .form-wrap,
+  #pg-contact .dkf-contact-layout .card{box-sizing:border-box!important}
+  #pg-contact .dkf-contact-sidebar .card{width:100%!important;max-width:100%!important}
+}
+
+@media (max-width:480px){
+  #pg-contact>section>.wrap{padding-left:16px!important;padding-right:16px!important}
+  #pg-contact .dkf-contact-layout>.form-wrap{padding:24px 18px!important;border-radius:24px!important}
+  #pg-contact .dkf-contact-sidebar .card{padding:22px 18px!important}
+  #pg-contact .dkf-contact-layout .form-sub{overflow-wrap:anywhere!important}
+  #pg-contact .dkf-contact-layout .captcha-row{display:flex!important;flex-wrap:wrap!important;gap:.65rem!important}
+  #pg-contact .dkf-contact-layout .captcha-refresh{white-space:normal!important}
+  #pg-contact .dkf-contact-sidebar .btn{white-space:normal!important;text-align:center!important;width:100%!important}
+}
+</style>
 </head>
 <body>
 <!-- Google Tag Manager (noscript): DKF -->
@@ -1520,7 +1605,7 @@ section.dkf-stories-theme .tcard-role {
 </div>
 <section style="background:var(--off)">
 <div class="wrap">
-<div style="display:grid;grid-template-columns:1fr 340px;gap:3rem;align-items:start;max-width:1040px;margin:0 auto">
+<div class="dkf-contact-layout" data-contact-layout-version="v4">
 <!-- CONTACT FORM -->
 <div class="form-wrap rev" style="max-width:100%">
 <p class="eyebrow">Send Us a Message</p>
@@ -1585,7 +1670,7 @@ section.dkf-stories-theme .tcard-role {
 </div>
 </div>
 <!-- INFO SIDEBAR -->
-<div class="rev-r" style="position:sticky;top:88px">
+<div class="dkf-contact-sidebar rev-r">
 <div class="card" style="margin-bottom:1.1rem">
 <h4 style="margin-bottom:1.1rem">Contact Information</h4>
 <div class="foot-ci" style="color:var(--ink-mid);margin-bottom:.9rem">
