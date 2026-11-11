@@ -312,22 +312,19 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .fsuccess h3{color:var(--teal-dk);margin-bottom:.5rem}
 .fsuccess p{font-size:.88rem}
 .sicon{font-size:2.8rem;margin-bottom:.7rem}
-/* Compact, consistent confirmation design for Donation, Volunteer, and Contact forms. */
-.thankyou-success{background:#fff;border:0;border-radius:0;margin:0;min-height:330px;padding:clamp(2rem,5vw,3.25rem) clamp(1.1rem,5vw,3.5rem);box-sizing:border-box}
-.thankyou-check{display:grid;place-items:center;width:58px;height:58px;margin:0 auto .65rem;color:#55a94f;font:800 54px/1 Arial,sans-serif;transform:rotate(-2deg)}
-.thankyou-success .thankyou-title{margin:0;color:#171717;font-family:'Playfair Display',Georgia,serif;font-size:clamp(2.7rem,5vw,3.7rem);font-style:italic;font-weight:600;line-height:1.02;letter-spacing:-.035em;white-space:nowrap}
-.thankyou-subtitle{margin:.78rem 0 .45rem;color:var(--teal-dk);font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.28rem,2.5vw,1.65rem);font-weight:600;line-height:1.25}
-.thankyou-copy{max-width:650px;margin:0 auto;color:var(--ink-mid);font-size:1rem!important;line-height:1.58}
-.thankyou-home{display:inline-flex;align-items:center;justify-content:center;min-width:250px;min-height:50px;margin-top:1.4rem;padding:.78rem 1.8rem;border:0;border-radius:999px;background:#111;color:#fff;font-family:'Lato',sans-serif;font-size:.98rem;font-weight:800;text-decoration:none;cursor:pointer;transition:transform var(--ease),background var(--ease)}
+/* Standalone confirmation design for the Volunteer and Device Donation forms. */
+.thankyou-success{background:#fff;border:0;border-radius:0;margin:0;min-height:430px;padding:clamp(3rem,8vw,5.5rem) clamp(1.25rem,6vw,4.5rem);box-sizing:border-box}
+.thankyou-check{display:grid;place-items:center;width:78px;height:78px;margin:0 auto 1.35rem;color:#55a94f;font:800 72px/1 Arial,sans-serif;transform:rotate(-2deg)}
+.thankyou-success .thankyou-title{margin:0;color:#171717;font-family:'Playfair Display',Georgia,serif;font-size:clamp(3.4rem,6vw,4.8rem);font-style:italic;font-weight:600;line-height:1.03;letter-spacing:-.035em;white-space:nowrap}
+.thankyou-subtitle{margin:1.35rem 0 .7rem;color:var(--teal-dk);font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.35rem,3vw,1.8rem);font-weight:600;line-height:1.25}
+.thankyou-copy{max-width:620px;margin:0 auto;color:var(--ink-mid);font-size:1rem!important;line-height:1.75}
+.thankyou-home{display:inline-flex;align-items:center;justify-content:center;min-width:270px;min-height:54px;margin-top:2.1rem;padding:.9rem 2rem;border:0;border-radius:999px;background:#111;color:#fff;font-family:'Lato',sans-serif;font-size:1rem;font-weight:800;text-decoration:none;cursor:pointer;transition:transform var(--ease),background var(--ease)}
 .thankyou-home:hover,.thankyou-home:focus-visible{background:var(--teal-dk);color:#fff;transform:translateY(-2px)}
 .form-wrap.showing-thankyou>.eyebrow,.form-wrap.showing-thankyou>.form-title,.form-wrap.showing-thankyou>.form-sub{display:none}
 .donate-layout.showing-thankyou-layout{grid-template-columns:minmax(0,900px);justify-content:center}
 .donate-layout.showing-thankyou-layout>.rev-r{display:none}
 .donate-layout.showing-thankyou-layout>.form-wrap{width:100%;max-width:900px!important}
-#pg-contact .dkf-contact-layout.showing-thankyou-layout{display:block;max-width:900px}
-#pg-contact .dkf-contact-layout.showing-thankyou-layout>.dkf-contact-sidebar{display:none!important}
-#pg-contact .dkf-contact-layout.showing-thankyou-layout>.form-wrap{width:100%;max-width:900px!important;margin:0 auto!important}
-@media(max-width:600px){.thankyou-success{min-height:290px;padding:1.8rem .9rem}.thankyou-check{width:50px;height:50px;font-size:48px;margin-bottom:.45rem}.thankyou-success .thankyou-title{font-size:clamp(2.45rem,12vw,3.25rem)}.thankyou-subtitle{font-size:1.22rem;margin:.65rem 0 .35rem}.thankyou-copy{font-size:.95rem!important;line-height:1.55}.thankyou-home{width:100%;min-width:0;max-width:300px;margin-top:1.2rem}}
+@media(max-width:600px){.thankyou-success{min-height:390px;padding:3rem 1.1rem}.thankyou-check{width:66px;height:66px;font-size:62px;margin-bottom:1rem}.thankyou-success .thankyou-title{font-size:clamp(3rem,14vw,4rem)}.thankyou-subtitle{font-size:1.3rem}.thankyou-copy{font-size:.96rem!important;line-height:1.65}.thankyou-home{width:100%;min-width:0;max-width:320px}}
 
 /* ══ ROLE PILLS ═══════════════════════════════════ */
 .role-g{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2.5rem}
@@ -1273,8 +1270,20 @@ img,video,iframe{max-width:100%}
 }
 </style>
 <!-- End DKF typography polish v1 -->
+
+<style id="dkf-uniform-thankyou-v1">
+.thankyou-success{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:15px;min-height:0!important;padding:2.2rem 1.25rem 2.35rem!important;background:#fff!important;border:0!important;border-radius:0!important;text-align:center!important;box-sizing:border-box}
+.thankyou-check{display:grid!important;place-items:center!important;width:82px!important;height:82px!important;margin:0!important;border-radius:50%!important;background:#edf4ee!important;color:#397d47!important;font:700 58px/1 Arial,sans-serif!important;transform:none!important}
+.thankyou-success .thankyou-title{margin:4px 0 0!important;color:#153d31!important;font:600 clamp(40px,7vw,58px)/1.15 'Playfair Display',serif!important;letter-spacing:0!important;white-space:normal!important;font-style:normal!important}
+.thankyou-subtitle{margin:0!important;color:#987a34!important;font:600 clamp(19px,3vw,24px)/1.3 'Playfair Display',serif!important}
+.thankyou-copy,.thankyou-next{max-width:490px!important;margin:0!important;color:#52665c!important;font:16px/1.7 Lato,sans-serif!important}
+.thankyou-next{font-weight:600!important;color:#153d31!important}
+.thankyou-home{display:inline-flex!important;align-items:center!important;justify-content:center!important;min-width:0!important;min-height:0!important;margin-top:14px!important;padding:14px 30px!important;border:0!important;border-radius:999px!important;background:#153d31!important;color:#fff!important;text-decoration:none!important;font:700 15px/1.3 Lato,sans-serif!important;cursor:pointer!important}
+.thankyou-home:hover,.thankyou-home:focus-visible{background:#275c49!important;color:#fff!important;transform:none!important}
+@media(max-width:560px){.thankyou-success{gap:12px;padding:1.7rem 1rem 2rem!important}.thankyou-check{width:70px!important;height:70px!important;font-size:50px!important}.thankyou-home{width:100%!important;max-width:310px!important;box-sizing:border-box!important}}
+</style>
 </head>
-<body data-thankyou-design-version="classic-centered-v2">
+<body data-thankyou-design-version="landing-uniform-v1">
 <!-- Google Tag Manager (noscript): DKF -->
 <noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-K5BLFBNP" style="display:none;visibility:hidden" width="0"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
@@ -1768,8 +1777,9 @@ section.dkf-stories-theme .tcard-role {
 <div class="fsuccess thankyou-success" id="vol-success" role="status" aria-live="polite" tabindex="-1">
 <div class="thankyou-check" aria-hidden="true">✓</div>
 <h3 class="thankyou-title">Thank You!</h3>
-<h4 class="thankyou-subtitle">Your Time Makes a Difference</h4>
-<p class="thankyou-copy">We have received your volunteer application. Your time and skills can help us expand access to technology for children who need it most.</p>
+<h4 class="thankyou-subtitle">Together, We Can Make a Difference!</h4>
+<p class="thankyou-copy">Thank you for your interest in volunteering with Digital Kids Foundation. Your time and skills can help more children access technology and digital opportunities.</p>
+<p class="thankyou-next">We have received your application and will contact you about the next steps.</p>
 <button class="thankyou-home" onclick="resetThankYouAndGoHome('vol-form','vol-success');return false" type="button">Back to Home Page</button>
 </div>
 </div>
@@ -1862,8 +1872,9 @@ section.dkf-stories-theme .tcard-role {
 <div class="fsuccess thankyou-success" id="don-success" role="status" aria-live="polite" tabindex="-1">
 <div class="thankyou-check" aria-hidden="true">✓</div>
 <h3 class="thankyou-title">Thank You!</h3>
-<h4 class="thankyou-subtitle">Your Kindness Makes a Difference</h4>
-<p class="thankyou-copy">We have received your device donation inquiry. Your support helps us place technology into the hands of children who need it most.</p>
+<h4 class="thankyou-subtitle">Your Kindness Makes a Difference!</h4>
+<p class="thankyou-copy">Thank you for choosing to support Digital Kids Foundation. Your generosity brings us one step closer to helping more children access the technology they need.</p>
+<p class="thankyou-next">We have received your information and will contact you about the next steps.</p>
 <button class="thankyou-home" onclick="resetThankYouAndGoHome('don-form','don-success');return false" type="button">Back to Home Page</button>
 </div>
 </div>
@@ -1986,8 +1997,9 @@ section.dkf-stories-theme .tcard-role {
 <div class="fsuccess thankyou-success" id="con-success" role="status" aria-live="polite" tabindex="-1">
 <div class="thankyou-check" aria-hidden="true">✓</div>
 <h3 class="thankyou-title">Thank You!</h3>
-<h4 class="thankyou-subtitle">Your Message Matters</h4>
-<p class="thankyou-copy">We have received your message. Your interest and support help us continue expanding access to technology for children who need it most.</p>
+<h4 class="thankyou-subtitle">Together, We Can Make a Difference!</h4>
+<p class="thankyou-copy">Thank you for reaching out to Digital Kids Foundation. Your interest and support help us continue expanding access to technology for children who need it most.</p>
+<p class="thankyou-next">We have received your message and will contact you about the next steps.</p>
 <button class="thankyou-home" onclick="resetThankYouAndGoHome('con-form','con-success');return false" type="button">Back to Home Page</button>
 </div>
 </div>
@@ -2306,8 +2318,6 @@ function resetThankYouAndGoHome(formId, successId) {
     if (formWrap) formWrap.classList.remove('showing-thankyou');
     const donateLayout = form.closest('.donate-layout');
     if (donateLayout) donateLayout.classList.remove('showing-thankyou-layout');
-    const contactLayout = form.closest('.dkf-contact-layout');
-    if (contactLayout) contactLayout.classList.remove('showing-thankyou-layout');
     const prefix = formId === 'vol-form' ? 'v' : (formId === 'don-form' ? 'd' : 'c');
     if (typeof genCaptcha === 'function') genCaptcha(prefix);
     if (window.turnstile && _dkfTurnstileWidgets[formId] != null) {
@@ -2409,23 +2419,19 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
       if (res.ok && body.ok) {
         form.style.display = 'none';
         const success = document.getElementById(successId);
-        if (formId === 'vol-form' || formId === 'don-form' || formId === 'con-form') {
+        if (formId === 'vol-form' || formId === 'don-form') {
           const formWrap = form.closest('.form-wrap');
           if (formWrap) formWrap.classList.add('showing-thankyou');
           if (formId === 'don-form') {
             const donateLayout = form.closest('.donate-layout');
             if (donateLayout) donateLayout.classList.add('showing-thankyou-layout');
           }
-          if (formId === 'con-form') {
-            const contactLayout = form.closest('.dkf-contact-layout');
-            if (contactLayout) contactLayout.classList.add('showing-thankyou-layout');
-          }
         }
         if (body.verificationRequired) {
           success.innerHTML = '<div class="sicon">✉️</div><h3>Check Your Email</h3><p>We sent a verification link to the email address you entered. Please click it within <strong>30 minutes</strong> to complete your submission. DKF will receive your application only after verification.</p><p style="margin-top:.7rem">If you do not see it, check your spam folder.</p>';
         }
         success.style.display = 'block';
-        if (formId === 'vol-form' || formId === 'don-form' || formId === 'con-form') {
+        if (formId === 'vol-form' || formId === 'don-form') {
           success.focus({preventScroll:true});
           success.scrollIntoView({behavior:'smooth',block:'center'});
         }
