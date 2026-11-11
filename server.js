@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const crypto = require('crypto');
 const store = require('./verification-store');
+const paypalDonations = require('./paypal-donations');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -20,6 +21,8 @@ app.use((req, res, next) => {
   if (req.secure || req.headers['x-forwarded-proto'] === 'https') res.set('Strict-Transport-Security','max-age=31536000');
   next();
 });
+// PayPal IPN needs the original URL-encoded body before global body parsing.
+paypalDonations.mountRawRoutes(app);
 app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: false, limit: '100kb' }));
 
@@ -76,7 +79,7 @@ async function verifyTurnstile(token, ip) {
 }
 
 function buildNotification(type, data, mailFrom, mailTo, replyTo) {
-  const labels = {contact:'Contact Message', volunteer:'Verified Volunteer Application', donation:'Verified Device Donation Submission'};
+  const labels = {contact:'Contact Message', volunteer:'Volunteer Application', donation:'Device Donation Submission'};
   const ignored = new Set(['formType','website','turnstileToken','cf-turnstile-response','_subject','_next','_captcha','_replyto']);
   const rows = Object.entries(data).filter(([k]) => !ignored.has(k)).map(([k,v]) =>
     `<tr><td style="padding:8px;border:1px solid #ddd;font-weight:600">${esc(k.replace(/[_-]+/g,' '))}</td><td style="padding:8px;border:1px solid #ddd">${esc(v)}</td></tr>`
@@ -293,6 +296,10 @@ if (process.env.DATABASE_URL) laptopSystem.init().catch(err => console.error('La
 const donorReceipts = require('./donor-receipts');
 app.use(donorReceipts.router);
 if (process.env.DATABASE_URL) donorReceipts.ensureSchema().catch(err => console.error('Donor receipt schema initialization failed:', err.message));
+
+// Verified PayPal donations and server-side GA4 purchase events.
+app.use(paypalDonations.router);
+if (process.env.DATABASE_URL) paypalDonations.ensureSchema().catch(err => console.error('PayPal donation schema initialization failed:', err.message));
 
 
 // SEO cleanup: redirect only genuine replacements, not unrelated pages.
