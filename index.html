@@ -992,6 +992,22 @@ img,video,iframe{max-width:100%}
  body #pg-contact .dkf-contact-layout .dkf-turnstile {max-width:100%;overflow:visible;}
 }
 </style>
+<style id="dkf-contact-397-definitive">
+@media (max-width: 1100px) {
+ #pg-contact .dkf-contact-layout {display:block!important;grid-template-columns:none!important;width:100%!important;min-width:0!important;max-width:100%!important;}
+ #pg-contact .dkf-contact-layout > .form-wrap, #pg-contact .dkf-contact-layout > .dkf-contact-sidebar {display:block!important;position:static!important;float:none!important;clear:both!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;margin:0 0 20px!important;}
+ #pg-contact .dkf-contact-layout .fg {grid-template-columns:minmax(0,1fr)!important;}
+ #pg-contact .dkf-contact-layout .fg > * {grid-column:1/-1!important;min-width:0!important;}
+ #pg-contact .dkf-contact-layout .fc {width:100%!important;max-width:100%!important;box-sizing:border-box!important;}
+ #pg-contact .dkf-contact-sidebar .card {width:100%!important;max-width:100%!important;box-sizing:border-box!important;}
+ #pg-contact .dkf-contact-sidebar a {overflow-wrap:anywhere!important;word-break:break-word!important;}
+}
+@media (max-width: 600px) {
+ #pg-contact > section > .wrap {padding-left:16px!important;padding-right:16px!important;box-sizing:border-box!important;}
+ #pg-contact .dkf-contact-layout > .form-wrap {padding:26px 18px!important;}
+ #pg-contact .dkf-contact-layout .form-sub {overflow-wrap:anywhere!important;}
+}
+</style>
 </head>
 <body>
 <!-- ══ NAV ══════════════════════════════════════════ -->
@@ -2187,5 +2203,34 @@ stampFormTime('con-form');
 })();
 </script>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=dkfTurnstileReady&amp;render=explicit" async defer></script>
+<script id="dkf-contact-mobile-layout-397">
+(function(){
+ function fix(){
+  var page=document.getElementById('pg-contact');
+  if(!page)return;
+  var small=window.innerWidth<=1100;
+  var layout=page.querySelector('.dkf-contact-layout');
+  if(!layout)return;
+  function set(el,key,val){if(el)el.style.setProperty(key,val,'important')}
+  function clear(el,key){if(el)el.style.removeProperty(key)}
+  var props=['display','grid-template-columns','width','max-width','min-width','margin'];
+  if(small){
+   set(layout,'display','block');set(layout,'grid-template-columns','none');set(layout,'width','100%');set(layout,'max-width','100%');set(layout,'min-width','0');
+   Array.prototype.forEach.call(layout.children,function(el){
+    set(el,'display','block');set(el,'position','static');set(el,'float','none');set(el,'clear','both');set(el,'width','100%');set(el,'max-width','100%');set(el,'min-width','0');set(el,'box-sizing','border-box');set(el,'margin','0 0 20px');
+   });
+   layout.dataset.mobileLayout='single-column-v397';
+  }else{
+   props.forEach(function(k){clear(layout,k)});
+   Array.prototype.forEach.call(layout.children,function(el){['display','position','float','clear','width','max-width','min-width','box-sizing','margin'].forEach(function(k){clear(el,k)})});
+   delete layout.dataset.mobileLayout;
+  }
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix);else fix();
+ window.addEventListener('resize',fix,{passive:true});
+ document.addEventListener('click',function(){requestAnimationFrame(fix)},true);
+ window.addEventListener('hashchange',fix);
+})();
+</script>
 </body>
 </html>
