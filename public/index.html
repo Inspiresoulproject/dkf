@@ -312,6 +312,19 @@ select.fc{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.o
 .fsuccess h3{color:var(--teal-dk);margin-bottom:.5rem}
 .fsuccess p{font-size:.88rem}
 .sicon{font-size:2.8rem;margin-bottom:.7rem}
+/* Standalone confirmation design for the Volunteer and Device Donation forms. */
+.thankyou-success{background:#fff;border:0;border-radius:0;margin:0;min-height:430px;padding:clamp(3rem,8vw,5.5rem) clamp(1.25rem,6vw,4.5rem);box-sizing:border-box}
+.thankyou-check{display:grid;place-items:center;width:78px;height:78px;margin:0 auto 1.35rem;color:#55a94f;font:800 72px/1 Arial,sans-serif;transform:rotate(-2deg)}
+.thankyou-success .thankyou-title{margin:0;color:#171717;font-family:'Playfair Display',Georgia,serif;font-size:clamp(3.4rem,6vw,4.8rem);font-style:italic;font-weight:600;line-height:1.03;letter-spacing:-.035em;white-space:nowrap}
+.thankyou-subtitle{margin:1.35rem 0 .7rem;color:var(--teal-dk);font-family:'Playfair Display',Georgia,serif;font-size:clamp(1.35rem,3vw,1.8rem);font-weight:600;line-height:1.25}
+.thankyou-copy{max-width:620px;margin:0 auto;color:var(--ink-mid);font-size:1rem!important;line-height:1.75}
+.thankyou-home{display:inline-flex;align-items:center;justify-content:center;min-width:270px;min-height:54px;margin-top:2.1rem;padding:.9rem 2rem;border:0;border-radius:999px;background:#111;color:#fff;font-family:'Lato',sans-serif;font-size:1rem;font-weight:800;text-decoration:none;cursor:pointer;transition:transform var(--ease),background var(--ease)}
+.thankyou-home:hover,.thankyou-home:focus-visible{background:var(--teal-dk);color:#fff;transform:translateY(-2px)}
+.form-wrap.showing-thankyou>.eyebrow,.form-wrap.showing-thankyou>.form-title,.form-wrap.showing-thankyou>.form-sub{display:none}
+.donate-layout.showing-thankyou-layout{grid-template-columns:minmax(0,900px);justify-content:center}
+.donate-layout.showing-thankyou-layout>.rev-r{display:none}
+.donate-layout.showing-thankyou-layout>.form-wrap{width:100%;max-width:900px!important}
+@media(max-width:600px){.thankyou-success{min-height:390px;padding:3rem 1.1rem}.thankyou-check{width:66px;height:66px;font-size:62px;margin-bottom:1rem}.thankyou-success .thankyou-title{font-size:clamp(3rem,14vw,4rem)}.thankyou-subtitle{font-size:1.3rem}.thankyou-copy{font-size:.96rem!important;line-height:1.65}.thankyou-home{width:100%;min-width:0;max-width:320px}}
 
 /* ══ ROLE PILLS ═══════════════════════════════════ */
 .role-g{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2.5rem}
@@ -1178,7 +1191,7 @@ img,video,iframe{max-width:100%}
 }
 </style>
 </head>
-<body>
+<body data-thankyou-design-version="classic-centered-v2">
 <!-- Google Tag Manager (noscript): DKF -->
 <noscript><iframe height="0" src="https://www.googletagmanager.com/ns.html?id=GTM-K5BLFBNP" style="display:none;visibility:hidden" width="0"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
@@ -1669,7 +1682,13 @@ section.dkf-stories-theme .tcard-role {
 </div>
 </div>
 </form>
-<div class="fsuccess" id="vol-success"><div class="sicon">🎉</div><h3>Application Received!</h3><p>Your volunteer application has been sent to <strong>help@digitalkidsfoundation.org</strong>. Our team will follow up at the email you provided if there is a suitable opportunity or next step.</p><p style="margin-top:.7rem">In the meantime, you can also <button onclick="go('donate')" style="color:var(--teal);font-weight:700;background:none;border:none;cursor:pointer;text-decoration:underline">donate a device</button> to support our mission.</p></div>
+<div class="fsuccess thankyou-success" id="vol-success" role="status" aria-live="polite" tabindex="-1">
+<div class="thankyou-check" aria-hidden="true">✓</div>
+<h3 class="thankyou-title">Thank You!</h3>
+<h4 class="thankyou-subtitle">Application Received</h4>
+<p class="thankyou-copy">We have received your volunteer application. Our team will follow up at the email you provided if there is a suitable opportunity or next step.</p>
+<button class="thankyou-home" onclick="resetThankYouAndGoHome('vol-form','vol-success');return false" type="button">Back to Home Page</button>
+</div>
 </div>
 </div>
 </section>
@@ -1757,7 +1776,13 @@ section.dkf-stories-theme .tcard-role {
 </div>
 </div>
 </form>
-<div class="fsuccess" id="don-success"><div class="sicon">💚</div><h3>Thank You for Your Generosity!</h3><p>Your device donation inquiry has been sent to <strong>help@digitalkidsfoundation.org</strong>. Our team will review it and follow up about the next steps.</p><p style="margin-top:.7rem">Want to do more? <button onclick="go('volunteer')" style="color:var(--teal);font-weight:700;background:none;border:none;cursor:pointer;text-decoration:underline">Become a volunteer →</button></p></div>
+<div class="fsuccess thankyou-success" id="don-success" role="status" aria-live="polite" tabindex="-1">
+<div class="thankyou-check" aria-hidden="true">✓</div>
+<h3 class="thankyou-title">Thank You!</h3>
+<h4 class="thankyou-subtitle">Your Kindness Makes a Difference</h4>
+<p class="thankyou-copy">We have received your device donation inquiry. Our team will review it and contact you about the next steps.</p>
+<button class="thankyou-home" onclick="resetThankYouAndGoHome('don-form','don-success');return false" type="button">Back to Home Page</button>
+</div>
 </div>
 <!-- SIDEBAR -->
 <div class="rev-r" style="position:sticky;top:88px">
@@ -2186,6 +2211,27 @@ document.querySelectorAll('#vol-form, #don-form, #con-form').forEach(function(fo
   });
 });
 
+/* Reset an inline confirmation before returning to the homepage. */
+function resetThankYouAndGoHome(formId, successId) {
+  const form = document.getElementById(formId);
+  const success = document.getElementById(successId);
+  if (form) {
+    form.reset();
+    form.style.display = '';
+    const formWrap = form.closest('.form-wrap');
+    if (formWrap) formWrap.classList.remove('showing-thankyou');
+    const donateLayout = form.closest('.donate-layout');
+    if (donateLayout) donateLayout.classList.remove('showing-thankyou-layout');
+    const prefix = formId === 'vol-form' ? 'v' : (formId === 'don-form' ? 'd' : 'c');
+    if (typeof genCaptcha === 'function') genCaptcha(prefix);
+    if (window.turnstile && _dkfTurnstileWidgets[formId] != null) {
+      window.turnstile.reset(_dkfTurnstileWidgets[formId]);
+    }
+  }
+  if (success) success.style.display = 'none';
+  go('home');
+}
+
 /* Main validation + submit function */
 function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
   const errEl = document.getElementById(errId);
@@ -2277,10 +2323,22 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
       if (res.ok && body.ok) {
         form.style.display = 'none';
         const success = document.getElementById(successId);
+        if (formId === 'vol-form' || formId === 'don-form') {
+          const formWrap = form.closest('.form-wrap');
+          if (formWrap) formWrap.classList.add('showing-thankyou');
+          if (formId === 'don-form') {
+            const donateLayout = form.closest('.donate-layout');
+            if (donateLayout) donateLayout.classList.add('showing-thankyou-layout');
+          }
+        }
         if (body.verificationRequired) {
           success.innerHTML = '<div class="sicon">✉️</div><h3>Check Your Email</h3><p>We sent a verification link to the email address you entered. Please click it within <strong>30 minutes</strong> to complete your submission. DKF will receive your application only after verification.</p><p style="margin-top:.7rem">If you do not see it, check your spam folder.</p>';
         }
         success.style.display = 'block';
+        if (formId === 'vol-form' || formId === 'don-form') {
+          success.focus({preventScroll:true});
+          success.scrollIntoView({behavior:'smooth',block:'center'});
+        }
         // Track only successful server-accepted submissions, never button clicks.
         if (!body.verificationRequired) {
           window.dataLayer = window.dataLayer || [];
