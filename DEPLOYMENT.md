@@ -17,3 +17,8 @@ This package combines the latest DKF Editorial mobile app-style website, PayPal 
 PayPal hosted button ID: TK69TPXPFTBSY. PayPal checkout is independent of the Resend inquiry forms.
 
 This ZIP is prepared for deployment, but it has not been pushed or deployed or end-to-end tested.
+
+
+## Coolify proxy setting
+
+Set `TRUST_PROXY_HOPS` to the number of trusted reverse-proxy hops in the Cloudflare-to-Coolify deployment path. The application defaults to `1`; confirm this value in production so rate limits use the visitor IP rather than a shared proxy IP.
