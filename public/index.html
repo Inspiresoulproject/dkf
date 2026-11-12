@@ -1294,6 +1294,37 @@ img,video,iframe{max-width:100%}
 .thankyou-home:hover,.thankyou-home:focus-visible{background:#275c49!important;color:#fff!important;transform:none!important}
 @media(max-width:560px){.thankyou-success{gap:12px;padding:1.7rem 1rem 2rem!important}.thankyou-check{width:70px!important;height:70px!important;font-size:50px!important}.thankyou-home{width:100%!important;max-width:310px!important;box-sizing:border-box!important}}
 </style>
+
+<style id="dkf-contact-thankyou-replace-fix">
+/* Contact success must replace the entire contact form + sidebar, not append beneath it. */
+#pg-contact .dkf-contact-layout.contact-thankyou-active{
+  display:block!important;
+  max-width:960px!important;
+  margin:0 auto!important;
+}
+#pg-contact .dkf-contact-layout.contact-thankyou-active>.dkf-contact-sidebar{
+  display:none!important;
+}
+#pg-contact .dkf-contact-layout.contact-thankyou-active>.form-wrap{
+  display:block!important;
+  width:100%!important;
+  max-width:960px!important;
+  margin:0 auto!important;
+  padding:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+#pg-contact .dkf-contact-layout.contact-thankyou-active>.form-wrap>:not(#con-success){
+  display:none!important;
+}
+#pg-contact .dkf-contact-layout.contact-thankyou-active #con-success{
+  display:block!important;
+  width:100%!important;
+  max-width:960px!important;
+  margin:0 auto!important;
+}
+</style>
 </head>
 <body data-thankyou-design-version="landing-uniform-v1">
 <!-- Google Tag Manager (noscript): DKF -->
@@ -2330,8 +2361,11 @@ function resetThankYouAndGoHome(formId, successId) {
     if (formWrap) formWrap.classList.remove('showing-thankyou');
     const donateLayout = form.closest('.donate-layout');
     if (donateLayout) donateLayout.classList.remove('showing-thankyou-layout');
-    const contactLayout = form.closest('.dkf-contact-layout');
-    if (contactLayout) contactLayout.classList.remove('showing-thankyou-contact');
+    const contactLayout = document.querySelector('#pg-contact .dkf-contact-layout');
+    if (contactLayout) {
+      contactLayout.classList.remove('showing-thankyou-contact');
+      contactLayout.classList.remove('contact-thankyou-active');
+    }
     const prefix = formId === 'vol-form' ? 'v' : (formId === 'don-form' ? 'd' : 'c');
     if (typeof genCaptcha === 'function') genCaptcha(prefix);
     if (window.turnstile && _dkfTurnstileWidgets[formId] != null) {
@@ -2441,8 +2475,11 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
             if (donateLayout) donateLayout.classList.add('showing-thankyou-layout');
           }
           if (formId === 'con-form') {
-            const contactLayout = form.closest('.dkf-contact-layout');
-            if (contactLayout) contactLayout.classList.add('showing-thankyou-contact');
+            const contactLayout = document.querySelector('#pg-contact .dkf-contact-layout');
+            if (contactLayout) {
+              contactLayout.classList.add('showing-thankyou-contact');
+              contactLayout.classList.add('contact-thankyou-active');
+            }
           }
         }
         if (body.verificationRequired) {
