@@ -1284,7 +1284,8 @@ img,video,iframe{max-width:100%}
 <!-- End DKF typography polish v1 -->
 
 <style id="dkf-uniform-thankyou-v1">
-.thankyou-success{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:15px;min-height:0!important;padding:2.2rem 1.25rem 2.35rem!important;background:#fff!important;border:0!important;border-radius:0!important;text-align:center!important;box-sizing:border-box}
+.fsuccess.thankyou-success{display:none;}
+.thankyou-success{flex-direction:column;align-items:center;justify-content:center;gap:15px;min-height:0!important;padding:2.2rem 1.25rem 2.35rem!important;background:#fff!important;border:0!important;border-radius:0!important;text-align:center!important;box-sizing:border-box}
 .thankyou-check{display:grid!important;place-items:center!important;width:82px!important;height:82px!important;margin:0!important;border-radius:50%!important;background:#edf4ee!important;color:#397d47!important;font:700 58px/1 Arial,sans-serif!important;transform:none!important}
 .thankyou-success .thankyou-title{margin:4px 0 0!important;color:#153d31!important;font:600 clamp(40px,7vw,58px)/1.15 'Playfair Display',serif!important;letter-spacing:0!important;white-space:normal!important;font-style:normal!important}
 .thankyou-subtitle{margin:0!important;color:#987a34!important;font:600 clamp(19px,3vw,24px)/1.3 'Playfair Display',serif!important}
@@ -1319,7 +1320,7 @@ img,video,iframe{max-width:100%}
   display:none!important;
 }
 #pg-contact .dkf-contact-layout.contact-thankyou-active #con-success{
-  display:block!important;
+  display:flex!important;
   width:100%!important;
   max-width:960px!important;
   margin:0 auto!important;
@@ -2389,7 +2390,7 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
     /* Silently fail — bots shouldn't know they were caught */
     console.warn('Honeypot triggered');
     document.getElementById(formId).style.display = 'none';
-    document.getElementById(successId).style.display = 'block';
+    document.getElementById(successId).style.display = 'flex';
     return;
   }
 
@@ -2485,7 +2486,7 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
         if (body.verificationRequired) {
           success.innerHTML = '<div class="sicon">✉️</div><h3>Check Your Email</h3><p>We sent a verification link to the email address you entered. Please click it within <strong>30 minutes</strong> to complete your submission. DKF will receive your application only after verification.</p><p style="margin-top:.7rem">If you do not see it, check your spam folder.</p>';
         }
-        success.style.display = 'block';
+        success.style.display = 'flex';
         success.focus({preventScroll:true});
         success.scrollIntoView({behavior:'smooth',block:'center'});
         // Track only successful server-accepted submissions, never button clicks.
