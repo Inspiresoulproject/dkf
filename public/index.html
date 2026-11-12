@@ -915,6 +915,18 @@ img,video,iframe{max-width:100%}
 #pg-contact .dkf-contact-layout .foot-ci,
 #pg-contact .dkf-contact-layout .foot-ci>div{min-width:0;max-width:100%}
 #pg-contact .dkf-contact-layout a{overflow-wrap:anywhere;word-break:break-word}
+#pg-contact .dkf-contact-layout.showing-thankyou-contact{
+  display:block!important;
+  max-width:960px!important;
+  margin:0 auto!important;
+}
+#pg-contact .dkf-contact-layout.showing-thankyou-contact>.dkf-contact-sidebar{display:none!important}
+#pg-contact .dkf-contact-layout.showing-thankyou-contact>.form-wrap{
+  width:100%!important;
+  max-width:960px!important;
+  margin:0 auto!important;
+  box-sizing:border-box!important;
+}
 
 @media (max-width:900px){
   #pg-contact>section>.wrap{
@@ -2318,6 +2330,8 @@ function resetThankYouAndGoHome(formId, successId) {
     if (formWrap) formWrap.classList.remove('showing-thankyou');
     const donateLayout = form.closest('.donate-layout');
     if (donateLayout) donateLayout.classList.remove('showing-thankyou-layout');
+    const contactLayout = form.closest('.dkf-contact-layout');
+    if (contactLayout) contactLayout.classList.remove('showing-thankyou-contact');
     const prefix = formId === 'vol-form' ? 'v' : (formId === 'don-form' ? 'd' : 'c');
     if (typeof genCaptcha === 'function') genCaptcha(prefix);
     if (window.turnstile && _dkfTurnstileWidgets[formId] != null) {
@@ -2419,22 +2433,24 @@ function validateAndSubmit(formId, capInputId, capPrefix, successId, errId) {
       if (res.ok && body.ok) {
         form.style.display = 'none';
         const success = document.getElementById(successId);
-        if (formId === 'vol-form' || formId === 'don-form') {
+        {
           const formWrap = form.closest('.form-wrap');
           if (formWrap) formWrap.classList.add('showing-thankyou');
           if (formId === 'don-form') {
             const donateLayout = form.closest('.donate-layout');
             if (donateLayout) donateLayout.classList.add('showing-thankyou-layout');
           }
+          if (formId === 'con-form') {
+            const contactLayout = form.closest('.dkf-contact-layout');
+            if (contactLayout) contactLayout.classList.add('showing-thankyou-contact');
+          }
         }
         if (body.verificationRequired) {
           success.innerHTML = '<div class="sicon">✉️</div><h3>Check Your Email</h3><p>We sent a verification link to the email address you entered. Please click it within <strong>30 minutes</strong> to complete your submission. DKF will receive your application only after verification.</p><p style="margin-top:.7rem">If you do not see it, check your spam folder.</p>';
         }
         success.style.display = 'block';
-        if (formId === 'vol-form' || formId === 'don-form') {
-          success.focus({preventScroll:true});
-          success.scrollIntoView({behavior:'smooth',block:'center'});
-        }
+        success.focus({preventScroll:true});
+        success.scrollIntoView({behavior:'smooth',block:'center'});
         // Track only successful server-accepted submissions, never button clicks.
         if (!body.verificationRequired) {
           window.dataLayer = window.dataLayer || [];
