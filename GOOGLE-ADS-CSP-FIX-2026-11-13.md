@@ -17,3 +17,5 @@ Added to `connect-src`:
 The existing `img-src 'self' data: https:` already permits HTTPS image/beacon requests, and the existing `frame-src` already permits Google Tag Manager.
 
 After deployment, re-run Tag Assistant Preview and submit the Donate Laptops form. Confirm that the CSP warning is gone and that `laptop_donation_submit` appears in the Tag Assistant event timeline and in GA4 Realtime.
+
+Follow-up: added `https://stats.g.doubleclick.net` to the global `connect-src` directive after Tag Assistant reported GA4/Ads collection at `https://stats.g.doubleclick.net/g/collect` was blocked.
